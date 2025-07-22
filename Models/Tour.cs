@@ -5,8 +5,12 @@
         public int ID { get; set; }
         public string Nombre { get; set; }
 
-        public int PaisID { get; set; }
         public int DestinoID { get; set; }
+
+        public virtual Destino Destino { get; set; }    
+        public int PaisID   { get; set; }
+
+        public virtual  Pais Pais  { get; set; }
 
         public DateTime Fecha { get; set; }
         public TimeSpan Hora { get; set; }
@@ -21,9 +25,6 @@
         public DateTime FechaFin => Fecha + Hora + ParseDuracion(Duracion);
 
         public string Estado => FechaFin > DateTime.Now ? "Vigente" : "Vencido";
-
-        public Pais Pais { get; set; }
-        public Destino Destino { get; set; }
 
         private TimeSpan ParseDuracion(string texto)
         {

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AgenciaDeToursRD.Migrations
 {
     [DbContext(typeof(AgenciaDeToursDbContext))]
-    [Migration("20250721210419_Inicial")]
-    partial class Inicial
+    [Migration("20250722033616_AgenciaTours")]
+    partial class AgenciaTours
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,18 +35,20 @@ namespace AgenciaDeToursRD.Migrations
 
                     b.Property<string>("DuracionTexto")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("PaisID")
+                    b.Property<int>("PaisId")
                         .HasColumnType("int");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("PaisID");
+                    b.HasIndex("PaisId");
 
                     b.ToTable("Destinos");
                 });
@@ -61,7 +63,8 @@ namespace AgenciaDeToursRD.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("ID");
 
@@ -79,6 +82,9 @@ namespace AgenciaDeToursRD.Migrations
                     b.Property<int>("DestinoID")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DestinoID1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
@@ -87,7 +93,8 @@ namespace AgenciaDeToursRD.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("PaisID")
                         .HasColumnType("int");
@@ -99,6 +106,8 @@ namespace AgenciaDeToursRD.Migrations
 
                     b.HasIndex("DestinoID");
 
+                    b.HasIndex("DestinoID1");
+
                     b.HasIndex("PaisID");
 
                     b.ToTable("Tours");
@@ -108,8 +117,8 @@ namespace AgenciaDeToursRD.Migrations
                 {
                     b.HasOne("AgenciaDeToursRD.Models.Pais", "Pais")
                         .WithMany("Destinos")
-                        .HasForeignKey("PaisID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("PaisId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Pais");
@@ -120,18 +129,27 @@ namespace AgenciaDeToursRD.Migrations
                     b.HasOne("AgenciaDeToursRD.Models.Destino", "Destino")
                         .WithMany()
                         .HasForeignKey("DestinoID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("AgenciaDeToursRD.Models.Destino", null)
+                        .WithMany("Tours")
+                        .HasForeignKey("DestinoID1");
 
                     b.HasOne("AgenciaDeToursRD.Models.Pais", "Pais")
                         .WithMany()
                         .HasForeignKey("PaisID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Destino");
 
                     b.Navigation("Pais");
+                });
+
+            modelBuilder.Entity("AgenciaDeToursRD.Models.Destino", b =>
+                {
+                    b.Navigation("Tours");
                 });
 
             modelBuilder.Entity("AgenciaDeToursRD.Models.Pais", b =>
