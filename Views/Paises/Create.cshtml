@@ -1,0 +1,110 @@
+﻿@model AgenciaDeToursRD.Models.Pais
+
+@{
+
+    ViewData["Title"] = "Crear País";
+
+    Layout = "_Layout";
+
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow p-4 rounded-3">
+            <h2 class="mb-4">Crear País con Destinos</h2>
+
+            <form asp-action="Create" method="post" autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Nombre" class="form-label">Nombre del País</label>
+                    <input asp-for="Nombre" class="form-control" placeholder="Ej. República Dominicana" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <h5 class="mt-4">Destinos</h5>
+                <table class="table table-bordered" id="destinosTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre del Destino</th>
+                            <th>Duración</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Renderiza destinos si ya hay -->
+                        @if (Model.Destinos != null && Model.Destinos.Any())
+
+                        {
+
+                            for (int i = 0; i < Model.Destinos.Count; i++)
+
+                            {
+                                <tr>
+                                    <td>
+                                        <input name="Destinos[@i].Nombre" class="form-control" value="@Model.Destinos.ElementAt(i).Nombre" />
+                                    </td>
+                                    <td>
+                                        <input name="Destinos[@i].DuracionTexto" class="form-control" value="@Model.Destinos.ElementAt(i).DuracionTexto" />
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Eliminar</button>
+                                    </td>
+                                </tr>
+
+                            }
+
+                        }
+                    </tbody>
+                </table>
+
+                <button type="button" class="btn btn-outline-secondary mb-3" onclick="addDestino()">Agregar Destino</button>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary w-100">Guardar País</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+
+                let destinoIndex = @Model.Destinos?.Count() ?? 0;
+
+                function addDestino() {
+
+                    const tableBody = document.querySelector("#destinosTable tbody");
+
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = 
+                    `<td><input name="Destinos[${destinoIndex}].Nombre" class="form-control" placeholder="Ej. Punta Cana" /></td>
+                    <td><input name="Destinos[${destinoIndex}].DuracionTexto" class="form-control" placeholder="Ej. 3 días" /></td>
+                    <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Eliminar</button>
+                    </td>`;
+
+                    destinoIndex++;
+
+                    tableBody.appendChild(row);
+
+                }
+
+                function removeRow(button) {
+
+                    const row = button.closest("tr");
+
+                    row.remove();
+
+                }
+    </script>
+
+}
+
+
