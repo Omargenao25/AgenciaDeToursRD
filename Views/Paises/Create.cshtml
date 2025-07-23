@@ -51,7 +51,10 @@
                                         <input name="Destinos[@i].DuracionTexto" class="form-control" value="@Model.Destinos.ElementAt(i).DuracionTexto" />
                                     </td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Eliminar</button>
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="if (confirm('¿Estás seguro de que deseas eliminar este destino')) removeRow(this)">
+                                            Eliminar
+                                        </button>
                                     </td>
                                 </tr>
 

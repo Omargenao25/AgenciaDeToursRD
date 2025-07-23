@@ -110,7 +110,7 @@ namespace AgenciaDeToursRD.Controllers
             return View(pais);
         }
 
-        // GET: DestinosController/Edit/5
+        [HttpGet]
         public ActionResult Edit(int id)
         {
             if (id <= 0)
@@ -126,7 +126,7 @@ namespace AgenciaDeToursRD.Controllers
             return View(pais);
         }
 
-        // POST: DestinosController/Edit/5
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, Pais paisRequest)
@@ -156,22 +156,37 @@ namespace AgenciaDeToursRD.Controllers
         // GET: DestinosController/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            var pais = _context.Paises
+       .Include(p => p.Destinos)
+       .FirstOrDefault(p => p.ID == id);
+
+            if (pais == null)
+                return NotFound();
+
+            return View(pais);
         }
 
-        // POST: DestinosController/Delete/5
-        [HttpPost]
+       
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public IActionResult DeleteConfirmed(int id)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var pais = _context.Paises
+                .Include(p => p.Destinos)
+                .FirstOrDefault(p => p.ID == id);
+
+            if (pais == null)
+                return NotFound();
+
+   
+            if (pais.Destinos != null && pais.Destinos.Any())
+                _context.Destinos.RemoveRange(pais.Destinos);
+
+            _context.Paises.Remove(pais);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
         }
+
     }
 }

@@ -1,0 +1,23 @@
+﻿@model AgenciaDeToursRD.Models.Pais
+
+<h2>¿Confirmar eliminación?</h2>
+
+<p>¿Estás seguro de que deseas eliminar el país <strong>@Model.Nombre</strong>?</p>
+
+@if (Model.Destinos != null && Model.Destinos.Any())
+{
+    <p>También se eliminarán los siguientes destinos:</p>
+    <ul>
+        @foreach (var destino in Model.Destinos)
+        {
+            <li>@destino.Nombre</li>
+        }
+    </ul>
+}
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="ID" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
