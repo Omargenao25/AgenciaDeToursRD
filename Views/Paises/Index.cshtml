@@ -1,0 +1,34 @@
+﻿@model List<AgenciaDeToursRD.Models.Pais>
+
+@{
+    ViewData["Title"] = "Lista de países";
+}
+
+<h2>Países disponibles</h2>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <a asp-action="Create" class="btn btn-success">Agregar país</a>
+
+        @foreach (var pais in Model)
+        {
+            <tr>
+                <td>@pais.Nombre</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@pais.ID" class="btn btn-info btn-sm">Ver</a>
+                    <a asp-action="Edit" asp-route-id="@pais.ID" class="btn btn-warning btn-sm">Editar</a>
+                    <a asp-action="Delete" asp-route-id="@pais.ID" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+

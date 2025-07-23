@@ -28,9 +28,20 @@ namespace AgenciaDeToursRD.Controllers
 
 
         // GET: DestinosController/Details/5
-        public ActionResult Details(int id)
+        public IActionResult Details(int? id)
         {
-            return View();
+            if (id == null)
+                return NotFound();
+
+            var pais = _context.Paises
+                .Include(p => p.Destinos)
+                .ThenInclude(d => d.Tours)
+                .FirstOrDefault(p => p.ID == id);
+
+            if (pais == null)
+                return NotFound();
+
+            return View(pais);
         }
 
         // GET: DestinosController/Create

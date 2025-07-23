@@ -1,0 +1,47 @@
+﻿@model AgenciaDeToursRD.Models.Pais
+
+@{
+    ViewData["Title"] = "Detalles de país";
+}
+
+<h2>Detalles de @Model.Nombre</h2>
+
+@if (Model.Destinos != null && Model.Destinos.Any())
+{
+    <h4>Destinos asociados:</h4>
+    <ul>
+        @foreach (var destino in Model.Destinos)
+        {
+            <li>
+                <strong>@destino.Nombre</strong>
+
+                @if (destino.Tours != null && destino.Tours.Any())
+                {
+                    <ul>
+                        @foreach (var tour in destino.Tours)
+                        {
+                            <li>@tour.Nombre — $@tour.Precio</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p style="margin-left:1em;">No hay tours para este destino.</p>
+                }
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No hay destinos registrados en este país.</p>
+}
+
+<hr />
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Editar</a>
+    <a asp-action="Delete" asp-route-id="@Model.ID" class="btn btn-danger">Eliminar</a>
+    <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    <a asp-action="Create" class="btn btn-success">Agregar país</a>
+</div>
