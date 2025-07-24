@@ -50,64 +50,69 @@ namespace AgenciaDeToursRD.Controllers
         {
             var pais = new Pais
             {
-                Destinos = new List<Destino>() // <- importante
+                Destinos = new List<Destino>() 
             };
             return View(pais);
         }
-
-        // POST: DestinosController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Pais pais)
+        public IActionResult Create(Pais pais)
         {
+            if (pais.Destinos == null || !pais.Destinos.Any(d => !string.IsNullOrWhiteSpace(d.Nombre)))
+            {
+                ModelState.AddModelError("Destinos", "Debes agregar al menos un destino válido.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                if (pais.Destinos == null)
+                    pais.Destinos = new List<Destino>();
+                return View(pais);
+            }
+
             try
             {
                 var newPais = new Pais
                 {
-                    Nombre = pais.Nombre.ToUpper(),
+                    Nombre = pais.Nombre,
                     Destinos = new List<Destino>()
                 };
 
-                if (_context.Paises.Any(p => p.Nombre.Equals(pais.Nombre)))
-                {
-                    ModelState.AddModelError(string.Empty, $"El pais {pais.Nombre} ya existe");
-                    return View(newPais);
-                }
-
                 foreach (var destino in pais.Destinos)
                 {
-                    var d  = _context.Destinos.FirstOrDefault(d => d.Nombre == destino.Nombre.ToUpper());
+                    if (string.IsNullOrWhiteSpace(destino.Nombre))
+                        continue;
 
-                    if (d != null)
+                    if (_context.Destinos.Any(d => d.Nombre == destino.Nombre))
                     {
                         ModelState.AddModelError("Destinos", $"El destino '{destino.Nombre}' ya existe en la base de datos.");
                         return View(pais);
                     }
 
-                    var existing = newPais.Destinos.FirstOrDefault(d => d.Nombre == destino.Nombre.ToUpper());
-
-                    if(existing != null)
+                    if (newPais.Destinos.Any(d => d.Nombre == destino.Nombre))
                     {
-                        ModelState.AddModelError("Destinos", $"El destino '{destino.Nombre}' está duplicado en la lista.");
+                        ModelState.AddModelError("Destinos", $"El destino '{destino.Nombre}' está repetido.");
                         return View(pais);
                     }
 
                     newPais.Destinos.Add(new Destino
                     {
-                        Nombre = destino.Nombre.ToUpper(),
-                        DuracionTexto = destino.DuracionTexto.ToUpper()
+                        Nombre = destino.Nombre,
+                        DuracionTexto = destino.DuracionTexto
                     });
                 }
+
                 _context.Paises.Add(newPais);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Debes agregar al menos un destino al Pais");
-               
+                ModelState.AddModelError(string.Empty, $"Ocurrió un error inesperado: {ex.Message}");
+                if (pais.Destinos == null)
+                    pais.Destinos = new List<Destino>();
+                return View(pais);
             }
-            return View(pais);
         }
 
         [HttpGet]

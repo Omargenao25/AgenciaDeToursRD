@@ -1,0 +1,61 @@
+﻿@model AgenciaDeToursRD.Models.Tour
+
+@{
+    ViewData["Title"] = "Crear tour";
+}
+
+<h2>Nuevo tour</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="Nombre">Nombre del tour</label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Fecha">Fecha</label>
+        <input asp-for="Fecha" type="date" class="form-control" />
+        <span asp-validation-for="Fecha" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Hora">Hora</label>
+        <input asp-for="Hora" type="time" class="form-control" />
+        <span asp-validation-for="Hora" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Precio">Precio</label>
+        <input asp-for="Precio" type="number" step="0.01" class="form-control" />
+        <span asp-validation-for="Precio" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="PaisID">País</label>
+        <select asp-for="PaisID" class="form-control"
+                asp-items="@(new SelectList(ViewBag.Paises, "ID", "Nombre"))">
+            <option value="">-- Selecciona un país --</option>
+        </select>
+        <span asp-validation-for="PaisID" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DestinoID">Destino</label>
+        <select asp-for="DestinoID" class="form-control"
+                asp-items="@(new SelectList(ViewBag.Destinos, "ID", "Nombre"))">
+            <option value="">-- Selecciona un destino --</option>
+        </select>
+        <span asp-validation-for="DestinoID" class="text-danger"></span>
+    </div>
+
+    <br />
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

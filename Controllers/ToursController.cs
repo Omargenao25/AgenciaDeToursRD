@@ -1,6 +1,8 @@
 ﻿using AgenciaDeToursRD.Data;
+using AgenciaDeToursRD.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AgenciaDeToursRD.Controllers
 {
@@ -8,10 +10,19 @@ namespace AgenciaDeToursRD.Controllers
     {
         private readonly AgenciaDeToursDbContext _context;
 
-   
-        public ActionResult Index()
+        public ToursController(AgenciaDeToursDbContext context)
         {
-            return View();
+            _context = context;
+        }
+
+        public IActionResult Index()
+        {
+            var tours = _context.Tours
+                .Include(t => t.Pais)
+                .Include(t => t.Destino)
+                .ToList();
+
+            return View(tours);
         }
 
       
@@ -20,26 +31,30 @@ namespace AgenciaDeToursRD.Controllers
             return View();
         }
 
-     
-        public ActionResult Create()
+        [HttpGet]
+        public IActionResult Create()
         {
+            ViewBag.Paises = _context.Paises.ToList();
+            ViewBag.Destinos = _context.Destinos.ToList();
             return View();
         }
 
-  
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public IActionResult Create(Tour tour)
         {
-            try
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                _context.Tours.Add(tour);
+                _context.SaveChanges();
+                return RedirectToAction("Index");
             }
-            catch
-            {
-                return View();
-            }
+
+            ViewBag.Paises = _context.Paises.ToList();
+            ViewBag.Destinos = _context.Destinos.ToList();
+            return View(tour);
         }
+
 
         // GET: ToursController/Edit/5
         public ActionResult Edit(int id)
