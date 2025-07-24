@@ -2,90 +2,47 @@
 
 @{
     ViewData["Title"] = "Crear País";
-    Layout = "_Layout";
 }
 
-<h2>Crear País</h2>
+<h2>@ViewData["Title"]</h2>
 
-<form asp-action="Create" enctype="multipart/form-data">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-    <div class="form-group">
-        <label asp-for="Nombre" class="control-label"></label>
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label asp-for="Nombre" class="form-label"></label>
         <input asp-for="Nombre" class="form-control" />
         <span asp-validation-for="Nombre" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label for="BanderaFile" class="control-label">Bandera (JPG o PNG)</label>
-        <input type="file" name="BanderaFile" class="form-control" accept=".jpg,.jpeg,.png" />
+    <div class="mb-3">
+        <label for="BanderaFile" class="form-label">Subir Bandera (opcional)</label>
+        <input type="file" class="form-control" id="BanderaFile" name="BanderaFile" accept=".jpg,.jpeg,.png" />
     </div>
 
-    <hr />
     <h4>Destinos</h4>
 
-    <table class="table" id="destinosTable">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Duración</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Destinos != null && Model.Destinos.Any())
+    <div id="destinosContainer">
+        @if (Model.Destinos != null && Model.Destinos.Any())
+        {
+            for (int i = 0; i < Model.Destinos.Count; i++)
             {
-                for (int i = 0; i < Model.Destinos.Count; i++)
-                {
-                    <tr>
-                        <td>
-                            <input asp-for="Destinos[@i].Nombre" class="form-control" required />
-                            <span asp-validation-for="Destinos[@i].Nombre" class="text-danger"></span>
-                        </td>
-                        <td>
-                            <input asp-for="Destinos[@i].DuracionTexto" class="form-control" />
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger" onclick="removeDestino(this)">Eliminar</button>
-                        </td>
-                    </tr>
-                }
+                <div class="mb-3">
+                    <label>Nombre del Destino</label>
+                    <input name="Destinos[@i].Nombre" value="@Model.Destinos.ElementAt(i).Nombre" class="form-control" />
+                </div>
             }
-        </tbody>
-    </table>
+        }
+        else
+        {
+            <div class="mb-3">
+                <label>Nombre del Destino</label>
+                <input name="Destinos[0].Nombre" class="form-control" />
+            </div>
+        }
+    </div>
 
-    <button type="button" class="btn btn-secondary" onclick="addDestino()">Agregar Destino</button>
-    <br /><br />
     <button type="submit" class="btn btn-primary">Guardar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        function addDestino() {
-            const index = document.querySelectorAll("#destinosTable tbody tr").length;
-            const row = `
-        <tr>
-        <td>
-        <input name="Destinos[${index}].Nombre" class="form-control" required />
-        <span class="text-danger field-validation-valid" data-valmsg-for="Destinos[${index}].Nombre" data-valmsg-replace="true"></span>
-        </td>
-        <td>
-        <input name="Destinos[${index}].DuracionTexto" class="form-control" />
-        </td>
-        <td>
-        <button type="button" class="btn btn-danger" onclick="removeDestino(this)">Eliminar</button>
-        </td>
-        </tr>
-                    `;
-            document.querySelector("#destinosTable tbody").insertAdjacentHTML('beforeend', row);
-        }
-
-        function removeDestino(button) {
-            button.closest("tr").remove();
-            // Opcional: podrías reindexar los campos si deseas
-        }
-    </script>
 }

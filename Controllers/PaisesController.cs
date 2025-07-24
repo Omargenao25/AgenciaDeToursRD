@@ -44,32 +44,32 @@ namespace AgenciaDeToursRD.Controllers
 
             return View(pais);
         }
-
-        // GET: DestinosController/Create
+        // GET: Paises/Create
         public ActionResult Create()
         {
             var pais = new Pais
             {
-                Destinos = new List<Destino>() 
+                Destinos = new List<Destino>()
             };
             return View(pais);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Pais pais, IFormFile BanderaFile)
+        public async Task<IActionResult> Create(Pais pais, IFormFile? BanderaFile)
         {
             if (!ModelState.IsValid)
             {
-                ModelState.AddModelError(string.Empty, "Por favor corrige los errores y vuelve a intentarlo.");
                 return View(pais);
             }
 
-            // Procesar la imagen de la bandera (si hay archivo)
             string? banderaUrl = null;
+
             if (BanderaFile != null && BanderaFile.Length > 0)
             {
                 var extension = Path.GetExtension(BanderaFile.FileName).ToLowerInvariant();
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+
                 if (!allowedExtensions.Contains(extension))
                 {
                     ModelState.AddModelError(string.Empty, "Solo se permiten imágenes JPG o PNG.");
@@ -77,51 +77,40 @@ namespace AgenciaDeToursRD.Controllers
                 }
 
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
                 if (!Directory.Exists(uploadsFolder))
                     Directory.CreateDirectory(uploadsFolder);
 
                 var uniqueFileName = $"{Guid.NewGuid()}{extension}";
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await BanderaFile.CopyToAsync(stream);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await BanderaFile.CopyToAsync(stream);
+                }
 
                 banderaUrl = $"/uploads/{uniqueFileName}";
             }
 
-          
             var newPais = new Pais
             {
-                Nombre = pais.Nombre.ToUpper().Trim(),
-                Bandera = banderaUrl
+                Nombre = pais.Nombre.Trim(),
+                Bandera = banderaUrl,
+                Destinos = new List<Destino>()
             };
 
-         
-            var destinosValidos = pais.Destinos?.Where(d => !string.IsNullOrWhiteSpace(d.Nombre)).ToList() ?? new List<Destino>();
-
-         
-            var destinosNombres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var destino in destinosValidos)
+            if (pais.Destinos != null)
             {
-               destino.Nombre = destino.Nombre.ToUpper().Trim();
-
-
-                bool existeEnDb = _context.Destinos.Any(d => d.Nombre == destino.Nombre);
-                if (existeEnDb)
+                foreach (var destino in pais.Destinos)
                 {
-                    ModelState.AddModelError(string.Empty, $"El destino '{destino.Nombre}' ya existe y no se admite duplicado.");
-                    return View(pais);
+                    if (!string.IsNullOrWhiteSpace(destino.Nombre))
+                    {
+                        newPais.Destinos.Add(new Destino
+                        {
+                            Nombre = destino.Nombre.Trim()
+                        });
+                    }
                 }
-
-              
-                if (!destinosNombres.Add(destino.Nombre))
-                {
-                    ModelState.AddModelError(string.Empty, $"El destino '{destino.Nombre}' está repetido en el formulario.");
-                    return View(pais);
-                }
-
-                newPais.Destinos.Add(destino);
             }
 
             try
@@ -136,8 +125,6 @@ namespace AgenciaDeToursRD.Controllers
                 return View(pais);
             }
         }
-
-
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
