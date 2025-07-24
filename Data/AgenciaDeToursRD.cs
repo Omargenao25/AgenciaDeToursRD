@@ -25,6 +25,10 @@ namespace AgenciaDeToursRD.Data
                       .IsRequired()
                       .HasMaxLength(100);
 
+                entity.Property(p => p.Bandera)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+
                 entity.HasMany(p => p.Destinos)
                       .WithOne(d => d.Pais)
                       .HasForeignKey(d => d.PaisId)
@@ -39,6 +43,7 @@ namespace AgenciaDeToursRD.Data
                 entity.Property(d => d.Nombre)
                       .IsRequired()
                       .HasMaxLength(100);
+                
 
                 entity.Property(d => d.DuracionTexto)
                       .IsRequired()

@@ -56,108 +56,218 @@ namespace AgenciaDeToursRD.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Pais pais)
+        public async Task<IActionResult> Create(Pais pais, IFormFile BanderaFile)
         {
-            if (pais.Destinos == null || !pais.Destinos.Any(d => !string.IsNullOrWhiteSpace(d.Nombre)))
-            {
-                ModelState.AddModelError("Destinos", "Debes agregar al menos un destino válido.");
-            }
-
             if (!ModelState.IsValid)
             {
-                if (pais.Destinos == null)
-                    pais.Destinos = new List<Destino>();
+                ModelState.AddModelError(string.Empty, "Por favor corrige los errores y vuelve a intentarlo.");
                 return View(pais);
+            }
+
+            // Procesar la imagen de la bandera (si hay archivo)
+            string? banderaUrl = null;
+            if (BanderaFile != null && BanderaFile.Length > 0)
+            {
+                var extension = Path.GetExtension(BanderaFile.FileName).ToLowerInvariant();
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError(string.Empty, "Solo se permiten imágenes JPG o PNG.");
+                    return View(pais);
+                }
+
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await BanderaFile.CopyToAsync(stream);
+
+                banderaUrl = $"/uploads/{uniqueFileName}";
+            }
+
+          
+            var newPais = new Pais
+            {
+                Nombre = pais.Nombre.ToUpper().Trim(),
+                Bandera = banderaUrl
+            };
+
+         
+            var destinosValidos = pais.Destinos?.Where(d => !string.IsNullOrWhiteSpace(d.Nombre)).ToList() ?? new List<Destino>();
+
+         
+            var destinosNombres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var destino in destinosValidos)
+            {
+               destino.Nombre = destino.Nombre.ToUpper().Trim();
+
+
+                bool existeEnDb = _context.Destinos.Any(d => d.Nombre == destino.Nombre);
+                if (existeEnDb)
+                {
+                    ModelState.AddModelError(string.Empty, $"El destino '{destino.Nombre}' ya existe y no se admite duplicado.");
+                    return View(pais);
+                }
+
+              
+                if (!destinosNombres.Add(destino.Nombre))
+                {
+                    ModelState.AddModelError(string.Empty, $"El destino '{destino.Nombre}' está repetido en el formulario.");
+                    return View(pais);
+                }
+
+                newPais.Destinos.Add(destino);
             }
 
             try
             {
-                var newPais = new Pais
-                {
-                    Nombre = pais.Nombre,
-                    Destinos = new List<Destino>()
-                };
-
-                foreach (var destino in pais.Destinos)
-                {
-                    if (string.IsNullOrWhiteSpace(destino.Nombre))
-                        continue;
-
-                    if (_context.Destinos.Any(d => d.Nombre == destino.Nombre))
-                    {
-                        ModelState.AddModelError("Destinos", $"El destino '{destino.Nombre}' ya existe en la base de datos.");
-                        return View(pais);
-                    }
-
-                    if (newPais.Destinos.Any(d => d.Nombre == destino.Nombre))
-                    {
-                        ModelState.AddModelError("Destinos", $"El destino '{destino.Nombre}' está repetido.");
-                        return View(pais);
-                    }
-
-                    newPais.Destinos.Add(new Destino
-                    {
-                        Nombre = destino.Nombre,
-                        DuracionTexto = destino.DuracionTexto
-                    });
-                }
-
                 _context.Paises.Add(newPais);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Ocurrió un error inesperado: {ex.Message}");
-                if (pais.Destinos == null)
-                    pais.Destinos = new List<Destino>();
+                ModelState.AddModelError(string.Empty, $"Error inesperado: {ex.Message}");
                 return View(pais);
             }
         }
 
-        [HttpGet]
-        public ActionResult Edit(int id)
-        {
-            if (id <= 0)
-                ModelState.AddModelError(string.Empty, "Id invalido");
 
-            var pais = _context.Paises
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var pais = await _context.Paises
                 .Include(p => p.Destinos)
-                .FirstOrDefault(p => p.ID == id);
+                .FirstOrDefaultAsync(p => p.ID == id);
 
             if (pais == null)
-                ModelState.AddModelError(string.Empty, $"No existe pais con el id {id}");
+            {
+                return NotFound();
+            }
 
             return View(pais);
         }
 
-       
+        // POST: Paises/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, Pais paisRequest)
+        public async Task<IActionResult> Edit(int id, Pais pais, IFormFile BanderaFile)
         {
+            if (id != pais.ID)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(pais);
+            }
+
             try
             {
-                var pais = _context.Paises
-               .Include(p => p.Destinos)
-               .FirstOrDefault(p => p.ID == id);
+                var paisDb = await _context.Paises
+                    .Include(p => p.Destinos)
+                    .FirstOrDefaultAsync(p => p.ID == id);
 
-                if (pais == null)
-                    ModelState.AddModelError(string.Empty, $"No existe pais con el id {id}");
+                if (paisDb == null)
+                {
+                    return NotFound();
+                }
 
+                var existing = _context.Paises.Any(p => p.Nombre == pais.Nombre.ToUpper().Trim() && p.ID != id);
 
-                if (_context.Paises.Any(p => p.Nombre.Equals(paisRequest.Nombre) && p.ID != paisRequest.ID))
-                    ModelState.AddModelError(string.Empty, $"El pais {paisRequest.Nombre} ya existe");
-                
+                if (existing)
+                {
+                    ModelState.AddModelError(string.Empty, "No se permiten duplicados");
+                    return View(pais);
+                }
 
+                // Actualizar nombre
+                paisDb.Nombre = pais.Nombre.ToUpper().Trim();
+
+                // Procesar imagen si se envía
+                if (BanderaFile != null && BanderaFile.Length > 0)
+                {
+                    var extension = Path.GetExtension(BanderaFile.FileName).ToLowerInvariant();
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+
+                    if (!allowedExtensions.Contains(extension))
+                    {
+                        ModelState.AddModelError(string.Empty, "Solo se permiten imágenes JPG o PNG.");
+                        return View(pais);
+                    }
+
+                  
+                    if (!string.IsNullOrEmpty(paisDb.Bandera))
+                    {
+                        var rutaAntigua = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", paisDb.Bandera.TrimStart('/'));
+                        if (System.IO.File.Exists(rutaAntigua))
+                        {
+                            System.IO.File.Delete(rutaAntigua);
+                        }
+                    }
+
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await BanderaFile.CopyToAsync(stream);
+                    }
+
+                    paisDb.Bandera = $"/uploads/{uniqueFileName}";
+                }
+
+                // Actualizar destinos
+                paisDb.Destinos.Clear();
+
+                if (pais.Destinos != null)
+                {
+                    foreach (var destino in pais.Destinos)
+                    {
+                        if (string.IsNullOrWhiteSpace(destino.Nombre))
+                        {
+                            ModelState.AddModelError(string.Empty, "Todos los destinos deben tener nombre.");
+                            return View(pais);
+                        }
+
+                        if (paisDb.Destinos.Any(d => d.Nombre == destino.Nombre.ToUpper().Trim()))
+                        {
+                            ModelState.AddModelError(string.Empty, $"Destino duplicado: {destino.Nombre}");
+                            return View(pais);
+                        }
+
+                        paisDb.Destinos.Add(new Destino
+                        {
+                            Nombre = destino.Nombre.ToUpper().Trim(),
+                            DuracionTexto = destino.DuracionTexto.ToUpper().Trim()
+                        });
+                    }
+                }
+
+                _context.Update(paisDb);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                ModelState.AddModelError(string.Empty, $"Error al editar: {ex.Message}");
+                return View(pais);
             }
         }
-
         // GET: DestinosController/Delete/5
         public ActionResult Delete(int id)
         {
