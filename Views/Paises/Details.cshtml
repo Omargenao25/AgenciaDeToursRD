@@ -4,43 +4,62 @@
     ViewData["Title"] = "Detalles de país";
 }
 
-<h2>Detalles de @Model.Nombre</h2>
-
-@if (Model.Destinos != null && Model.Destinos.Any())
-{
-    <h4>Destinos asociados:</h4>
-    <ul>
-        @foreach (var destino in Model.Destinos)
+<div class="container py-4">
+    <div class="d-flex align-items-center mb-4">
+        @if (!string.IsNullOrEmpty(Model.Bandera))
         {
-            <li>
-                <strong>@destino.Nombre</strong>
-
-                @if (destino.Tours != null && destino.Tours.Any())
-                {
-                    <ul>
-                        @foreach (var tour in destino.Tours)
-                        {
-                            <li>@tour.Nombre — $@tour.Precio</li>
-                        }
-                    </ul>
-                }
-                else
-                {
-                   
-                }
-            </li>
+            <div style="max-width: 150px; width: 100%; height: auto;" class="me-3">
+                <img src="@Model.Bandera" alt="Bandera de @Model.Nombre"
+                     class="img-thumbnail w-100 h-auto"
+                     style="object-fit: contain; max-height: 120px;" />
+            </div>
         }
-    </ul>
-}
-else
-{
-    <p>No hay destinos registrados en este país.</p>
-}
+        <h2 class="mb-0 text-primary">Detalles de <strong>@Model.Nombre</strong></h2>
+    </div>
 
-<hr />
+    @if (Model.Destinos != null && Model.Destinos.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var destino in Model.Destinos)
+            {
+                <div class="col">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-secondary">@destino.Nombre</h5>
 
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Editar</a>
-    <a asp-action="Delete" asp-route-id="@Model.ID" class="btn btn-danger">Eliminar</a>
-    <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+                            @if (destino.Tours != null && destino.Tours.Any())
+                            {
+                                <p class="card-subtitle mb-2 text-muted">Tours disponibles:</p>
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var tour in destino.Tours)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>@tour.Nombre</span>
+                                            <span class="badge bg-primary rounded-pill">$@tour.Precio</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted">Este destino aún no tiene tours registrados.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info mt-3">No hay destinos registrados en este país.</div>
+    }
+
+    <hr class="my-4" />
+
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Editar</a>
+        <a asp-action="Delete" asp-route-id="@Model.ID" class="btn btn-danger">Eliminar</a>
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    </div>
 </div>

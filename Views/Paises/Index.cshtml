@@ -6,42 +6,108 @@
 }
 
 <div class="container py-4">
-    <h2 class="mb-4">Listado de Países</h2>
-
-    <div class="mb-3">
-        <a asp-action="Create" class="btn btn-success">Agregar País</a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-flag-fill me-2 text-primary"></i>Listado de Países
+        </h2>
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Agregar País
+        </a>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var pais in Model)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    @if (!string.IsNullOrEmpty(pais.Bandera))
-                    {
-                        <img src="@pais.Bandera" class="card-img-top img-fluid" style="object-fit: cover; height: 200px;" alt="Bandera de @pais.Nombre">
-                    }
-                    else
-                    {
-                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <span class="text-muted">Sin imagen</span>
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            No hay países registrados aún.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var pais in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-3">
+                        @if (!string.IsNullOrEmpty(pais.Bandera))
+                        {
+                            <img src="@pais.Bandera"
+                                 class="card-img-top rounded-top"
+                                 style="object-fit: cover; height: 200px;"
+                                 alt="Bandera de @pais.Nombre" />
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center bg-light rounded-top" style="height: 200px;">
+                                <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                            </div>
+                        }
+
+                        <div class="card-body">
+                            <h5 class="card-title text-dark">@pais.Nombre</h5>
+                            <p class="card-text text-muted">
+                                <i class="bi bi-geo-alt-fill me-1"></i>
+                                <strong>@(pais.Destinos?.Count() ?? 0)</strong> destinos registrados
+                            </p>
                         </div>
-                    }
 
-                    <div class="card-body">
-                        <h5 class="card-title">@pais.Nombre</h5>
-                        <p class="card-text">
-                            Destinos registrados: <strong>@(pais.Destinos?.Count() ?? 0)</strong>
-                        </p>
-                    </div>
-
-                    <div class="card-footer bg-white d-flex justify-content-between">
-                        <a asp-action="Details" asp-route-id="@pais.ID" class="btn btn-outline-primary btn-sm">Ver</a>
-                        <a asp-action="Edit" asp-route-id="@pais.ID" class="btn btn-outline-secondary btn-sm">Editar</a>
-                        <a asp-action="Delete" asp-route-id="@pais.ID" class="btn btn-outline-danger btn-sm">Eliminar</a>
+                        <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@pais.ID" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@pais.ID" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="btn btn-outline-danger btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    data-id="@pais.ID"
+                                    data-nombre="@pais.Nombre">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-        }
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar el país <strong id="paisNombre"></strong>?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post">
+                    <input type="hidden" name="id" id="paisId" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const paisId = button.getAttribute('data-id');
+            const paisNombre = button.getAttribute('data-nombre');
+
+            const modalTitle = deleteModal.querySelector('#paisNombre');
+            const inputId = deleteModal.querySelector('#paisId');
+            const form = deleteModal.querySelector('#deleteForm');
+
+            modalTitle.textContent = paisNombre;
+            inputId.value = paisId;
+            form.action = `/Paises/Delete/${paisId}`;
+        });
+    </script>
+}

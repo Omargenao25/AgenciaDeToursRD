@@ -2,47 +2,115 @@
 
 @{
     ViewData["Title"] = "Crear País";
+    Layout = "_Layout";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container py-4">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="bi bi-flag-fill me-2"></i>Crear País
+            </h4>
+            <a asp-action="Index" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Volver al listado
+            </a>
+        </div>
 
-<form asp-action="Create" method="post" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label asp-for="Nombre" class="form-label"></label>
-        <input asp-for="Nombre" class="form-control" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
-    </div>
+        <div class="card-body">
+            <form asp-action="Create" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <div class="mb-3">
-        <label for="BanderaFile" class="form-label">Subir Bandera (opcional)</label>
-        <input type="file" class="form-control" id="BanderaFile" name="BanderaFile" accept=".jpg,.jpeg,.png" />
-    </div>
-
-    <h4>Destinos</h4>
-
-    <div id="destinosContainer">
-        @if (Model.Destinos != null && Model.Destinos.Any())
-        {
-            for (int i = 0; i < Model.Destinos.Count; i++)
-            {
                 <div class="mb-3">
-                    <label>Nombre del Destino</label>
-                    <input name="Destinos[@i].Nombre" value="@Model.Destinos.ElementAt(i).Nombre" class="form-control" />
+                    <label asp-for="Nombre" class="form-label fw-bold"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
                 </div>
-            }
-        }
-        else
-        {
-            <div class="mb-3">
-                <label>Nombre del Destino</label>
-                <input name="Destinos[0].Nombre" class="form-control" />
-            </div>
-        }
-    </div>
 
-    <button type="submit" class="btn btn-primary">Guardar</button>
-</form>
+                <div class="mb-4">
+                    <label for="BanderaFile" class="form-label fw-bold">Bandera (JPG o PNG)</label>
+                    <input type="file" name="BanderaFile" class="form-control" accept=".jpg,.jpeg,.png" />
+                </div>
+
+                <hr />
+                <h5 class="text-secondary mb-3">
+                    <i class="bi bi-geo-alt-fill me-2"></i>Destinos (opcional)
+                </h5>
+
+                <div class="table-responsive mb-3">
+                    <table class="table align-middle table-bordered" id="destinosTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Duración</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="destinosBody">
+                            @{
+                                if (Model.Destinos != null && Model.Destinos.Any())
+                                {
+                                    int i = 0;
+                                    foreach (var destino in Model.Destinos)
+                                    {
+                                        var destinoViewData = new ViewDataDictionary(ViewData) { { "index", i } };
+                                        @await Html.PartialAsync("_DestinoEditForm", destino, destinoViewData)
+                                        i++;
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mb-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="addDestino()">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Destino
+                    </button>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-save me-1"></i> Guardar
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        let destinoIndex = @Model.Destinos?.Count() ?? 0;
+
+        function addDestino() {
+            const template = `
+                        <tr>
+                            <td>
+                                <input name="Destinos[${destinoIndex}].Nombre" class="form-control" />
+                                <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].Nombre" data-valmsg-replace="true"></span>
+                            </td>
+                            <td>
+                                <input name="Destinos[${destinoIndex}].DuracionTexto" class="form-control" />
+                                <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].DuracionTexto" data-valmsg-replace="true"></span>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDestino(this)">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+            document.getElementById("destinosBody").insertAdjacentHTML("beforeend", template);
+            destinoIndex++;
+        }
+
+        function removeDestino(button) {
+            button.closest("tr").remove();
+        }
+    </script>
 }

@@ -1,93 +1,154 @@
 ﻿@model AgenciaDeToursRD.Models.Pais
+
 @{
     ViewData["Title"] = "Editar País";
     Layout = "_Layout";
 }
 
 <div class="container py-4">
-    <h2 class="mb-4">Editar País</h2>
-
-    <form asp-action="Edit" method="post" enctype="multipart/form-data">
-        <input type="hidden" asp-for="ID" />
-
-        <div class="mb-3">
-            <label asp-for="Nombre" class="form-label"></label>
-            <input asp-for="Nombre" class="form-control" />
-            <span asp-validation-for="Nombre" class="text-danger"></span>
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>Editar País
+            </h4>
+            <a asp-action="Index" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Volver al listado
+            </a>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Imagen de la Bandera (JPG o PNG)</label>
-            <input type="file" name="BanderaFile" class="form-control" />
-            @if (!string.IsNullOrEmpty(Model.Bandera))
+        <div class="card-body">
+
+            @* Mostrar errores personalizados de Validación si existen *@
+            @if (ViewData["ValidationErrors"] is List<string> errores && errores.Any())
             {
-                <div class="mt-2">
-                    <p class="text-muted">Imagen actual:</p>
-                    <img src="@Model.Bandera" style="max-height: 100px;" />
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach (var error in errores)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
                 </div>
             }
+
+            @* Mostrar errores de validación que estén en ModelState *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <form asp-action="Edit" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <input type="hidden" asp-for="ID" />
+
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label fw-bold">Nombre</label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label for="BanderaFile" class="form-label fw-bold">Bandera (JPG o PNG)</label>
+                    <input type="file" name="BanderaFile" class="form-control" accept=".jpg,.jpeg,.png" />
+                    @if (!string.IsNullOrEmpty(Model.Bandera))
+                    {
+                        <div class="mt-2">
+                            <strong>Bandera actual:</strong><br />
+                            <img src="@Model.Bandera" alt="Bandera actual" style="max-height: 100px;" class="img-thumbnail mt-2" />
+                        </div>
+                    }
+                </div>
+
+                <hr />
+                <h5 class="text-secondary mb-3">
+                    <i class="bi bi-geo-alt-fill me-2"></i>Destinos (opcional)
+                </h5>
+
+                <div class="table-responsive mb-3">
+                    <table class="table align-middle table-bordered" id="destinosTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Duración</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="destinosBody">
+                            @if (Model.Destinos != null)
+                            {
+                                var destinosList = Model.Destinos.ToList();
+                                for (int i = 0; i < destinosList.Count; i++)
+                                {
+                                    var destino = destinosList[i];
+                                    var viewData = new ViewDataDictionary(ViewData) { { "index", i } };
+                                    @await Html.PartialAsync("_DestinoEditForm", destino, viewData)
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mb-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="addDestino()">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Destino
+                    </button>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-save me-1"></i> Guardar Cambios
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
-
-        <h5 class="mt-4">Destinos</h5>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Duración</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="destinosBody">
-                @for (int i = 0; i < Model.Destinos?.Count; i++)
-                {
-                    <tr>
-                        <td>
-                            <input name="Destinos[@i].Nombre" class="form-control" value="@Model.Destinos.ElementAt(i).Nombre" required />
-                        </td>
-                        <td>
-                            <input name="Destinos[@i].DuracionTexto" class="form-control" value="@Model.Destinos.ElementAt(i).DuracionTexto" />
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <button type="button" class="btn btn-secondary mb-3" onclick="agregarFila()">Agregar Destino</button>
-
-        <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
-        </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
-        function agregarFila() {
-            const index = document.querySelectorAll('#destinosBody tr').length;
-            const row = `
-        <tr>
-        <td>
-        <input name="Destinos[${index}].Nombre" class="form-control" required />
-        </td>
-        <td>
-        <input name="Destinos[${index}].DuracionTexto" class="form-control" />
-        </td>
-        <td>
-        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button>
-        </td>
-        </tr>`;
-            document.getElementById("destinosBody").insertAdjacentHTML("beforeend", row);
+        let destinoIndex = @Model.Destinos?.Count() ?? 0;
+
+        function reindexDestinos() {
+            const rows = document.querySelectorAll("#destinosBody tr");
+            rows.forEach((row, index) => {
+                const inputNombre = row.querySelector('input[name$=".Nombre"]');
+                if (inputNombre) inputNombre.name = `Destinos[${index}].Nombre`;
+
+                const inputDuracion = row.querySelector('input[name$=".DuracionTexto"]');
+                if (inputDuracion) inputDuracion.name = `Destinos[${index}].DuracionTexto`;
+
+                const inputID = row.querySelector('input[name$=".ID"]');
+                if (inputID) inputID.name = `Destinos[${index}].ID`;
+            });
+
+            destinoIndex = rows.length;
         }
 
-        function eliminarFila(btn) {
-            const row = btn.closest('tr');
-            row.remove();
+        function removeDestino(button) {
+            button.closest("tr").remove();
+            reindexDestinos();
+        }
+
+        function addDestino() {
+            const row = `
+                        <tr>
+                            <td>
+                                <input type="hidden" name="Destinos[${destinoIndex}].ID" value="0" />
+                                <input name="Destinos[${destinoIndex}].Nombre" class="form-control" />
+                            </td>
+                            <td>
+                                <input name="Destinos[${destinoIndex}].DuracionTexto" class="form-control" />
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDestino(this)">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+            document.getElementById("destinosBody").insertAdjacentHTML("beforeend", row);
+            destinoIndex++;
         }
     </script>
 }
-
