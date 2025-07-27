@@ -26,6 +26,7 @@
 
         public string Estado => FechaFin > DateTime.Now ? "Vigente" : "Vencido";
 
+
         private TimeSpan ParseDuracion(string texto)
         {
 

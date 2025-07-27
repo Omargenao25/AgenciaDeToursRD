@@ -1,44 +1,58 @@
-﻿@model List<AgenciaDeToursRD.Models.Tour>
+﻿@model IEnumerable<AgenciaDeToursRD.Models.Tour>
 
 @{
-    ViewData["Title"] = "Listado de tours";
+    ViewBag.Title = "Lista de Tours";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Tours disponibles</h2>
+<h2 class="mb-4">🧭 Lista de Tours Disponibles</h2>
 
-<table class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Destino</th>
-            <th>País</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Precio</th>
-            <th>ITBIS</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var tour in Model)
-        {
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info">@TempData["InfoMessage"]</div>
+}
+
+<div class="d-flex justify-content-end mb-3">
+    @Html.ActionLink("✚ Agregar nuevo tour", "Create", "Tours", null, new { @class = "btn btn-success" })
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center" role="alert">
+        No hay tours registrados por el momento. ¡Agrega el primero! 🌎
+    </div>
+}
+else
+{
+    <table class="table table-hover table-bordered table-striped">
+        <thead class="table-dark">
             <tr>
-                <td>@tour.Nombre</td>
-                <td>@tour.Destino?.Nombre</td>
-                <td>@tour.Pais?.Nombre</td>
-                <td>@tour.Fecha.ToShortDateString()</td>
-                <td>@tour.Hora.ToString(@"hh\:mm")</td>
-                <td>$@tour.Precio.ToString("F2")</td>
-                <td>$@tour.ITBIS.ToString("F2")</td>
-                <td>@tour.Estado</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@tour.ID" class="btn btn-warning btn-sm">Editar</a>
-                    <a asp-action="Delete" asp-route-id="@tour.ID" class="btn btn-danger btn-sm">Eliminar</a>
-                </td>
+                <th>Nombre</th>
+                <th>Destino</th>
+                <th>Fecha</th>
+                <th>Precio</th>
+                <th class="text-center">Acciones</th>
             </tr>
-        }
-    </tbody>
-</table>
-
-<a asp-action="Create" class="btn btn-success">Agregar nuevo tour</a>
+        </thead>
+        <tbody>
+            @foreach (var tour in Model)
+            {
+                <tr>
+                    <td>@tour.Nombre</td>
+                    <td>@tour.Destino</td>
+                    <td>@tour.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@String.Format("${0:N2}", tour.Precio)</td>
+                    <td class="text-center">
+                        @Html.ActionLink("Detalles", "Details", new { id = tour.ID }, new { @class = "btn btn-primary btn-sm me-1" })
+                        @Html.ActionLink("Editar", "Edit", new { id = tour.ID }, new { @class = "btn btn-warning btn-sm me-1" })
+                        @Html.ActionLink("Eliminar", "Delete", new { id = tour.ID }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

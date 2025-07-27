@@ -1,61 +1,89 @@
 ﻿@model AgenciaDeToursRD.Models.Tour
 
 @{
-    ViewData["Title"] = "Crear tour";
+    ViewBag.Title = "Crear Tour";
 }
 
-<h2>Nuevo tour</h2>
+<h2 class="mb-4">Crear nuevo tour</h2>
 
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label asp-for="Nombre">Nombre del tour</label>
-        <input asp-for="Nombre" class="form-control" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
+@using (Html.BeginForm("Create", "Tours", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="card shadow-sm p-4 bg-light">
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Nombre)
+            @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.PaisID)
+            @Html.DropDownList("PaisID", null, "-- Selecciona un país --", new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.Label("Destino")
+            <input type="text" id="DestinoNombre" class="form-control" readonly />
+            @Html.HiddenFor(model => model.DestinoID)
+            @Html.ValidationMessageFor(model => model.DestinoID, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Fecha)
+            @Html.TextBoxFor(model => model.Fecha, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.Fecha, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Hora)
+            @Html.TextBoxFor(model => model.Hora, "{0:hh\\:mm}", new { @type = "time", @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.Hora, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Precio)
+            @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01", type = "number" })
+            @Html.ValidationMessageFor(model => model.Precio, "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary ms-2" })
     </div>
-
-    <div class="form-group">
-        <label asp-for="Fecha">Fecha</label>
-        <input asp-for="Fecha" type="date" class="form-control" />
-        <span asp-validation-for="Fecha" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Hora">Hora</label>
-        <input asp-for="Hora" type="time" class="form-control" />
-        <span asp-validation-for="Hora" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Precio">Precio</label>
-        <input asp-for="Precio" type="number" step="0.01" class="form-control" />
-        <span asp-validation-for="Precio" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="PaisID">País</label>
-        <select asp-for="PaisID" class="form-control"
-                asp-items="@(new SelectList(ViewBag.Paises, "ID", "Nombre"))">
-            <option value="">-- Selecciona un país --</option>
-        </select>
-        <span asp-validation-for="PaisID" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="DestinoID">Destino</label>
-        <select asp-for="DestinoID" class="form-control"
-                asp-items="@(new SelectList(ViewBag.Destinos, "ID", "Nombre"))">
-            <option value="">-- Selecciona un destino --</option>
-        </select>
-        <span asp-validation-for="DestinoID" class="text-danger"></span>
-    </div>
-
-    <br />
-    <button type="submit" class="btn btn-success">Guardar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+}
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#PaisID').change(function () {
+                var paisId = $(this).val();
+
+                if (paisId) {
+                    $.ajax({
+                        url: '@Url.Action("ObtenerDestino", "Tours")',
+                        type: 'GET',
+                        data: { id: paisId },
+                        success: function (response) {
+                            if (response && response.idDestino) {
+                                $('#DestinoNombre').val(response.nombreDestino);
+                                $('input[name="DestinoID"]').val(response.idDestino);
+                            } else {
+                                $('#DestinoNombre').val('');
+                                $('input[name="DestinoID"]').val('');
+                            }
+                        },
+                        error: function () {
+                            alert('Error al obtener el destino.');
+                        }
+                    });
+                } else {
+                    $('#DestinoNombre').val('');
+                    $('input[name="DestinoID"]').val('');
+                }
+            });
+        });
+    </script>
 }

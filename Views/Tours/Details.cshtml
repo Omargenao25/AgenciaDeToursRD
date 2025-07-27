@@ -1,0 +1,37 @@
+﻿@model AgenciaDeToursRD.Models.Tour
+
+@{
+    ViewBag.Title = "Detalles del Tour";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="mb-4">🎒 Detalles del Tour</h2>
+
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Nombre:</dt>
+            <dd class="col-sm-9">@Model.Nombre</dd>
+
+            <dt class="col-sm-3">Destino:</dt>
+            <dd class="col-sm-9">@Model.Destino.Nombre</dd>
+
+            <dt class="col-sm-3">País:</dt>
+            <dd class="col-sm-9">@Model.Pais.Nombre</dd>
+
+            <dt class="col-sm-3">Fecha:</dt>
+            <dd class="col-sm-9">@Model.Fecha.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-3">Precio:</dt>
+            <dd class="col-sm-9">@String.Format("${0:N2}", Model.Precio)</dd>
+        </dl>
+        <a href="@Url.Action("Edit", new { id = Model.ID })" class="btn btn-warning">Editar</a>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+</div>
