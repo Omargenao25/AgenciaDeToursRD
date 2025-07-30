@@ -19,7 +19,7 @@
 
         <div class="mb-3">
             @Html.LabelFor(model => model.PaisID)
-            @Html.DropDownList("PaisID", null, "-- Selecciona un país --", new { @class = "form-control" })
+            @Html.DropDownListFor(model => model.PaisID, ViewBag.Paises as SelectList, "-- Selecciona un país --", new { @class = "form-control", @id = "PaisID" })
             @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "text-danger" })
         </div>
 
@@ -57,33 +57,33 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        $(document).ready(function () {
-            $('#PaisID').change(function () {
-                var paisId = $(this).val();
+        $(function () {
+            $('#PaisID').on('change', function () {
+                const paisId = $(this).val();
 
-                if (paisId) {
-                    $.ajax({
-                        url: '@Url.Action("ObtenerDestino", "Tours")',
-                        type: 'GET',
-                        data: { id: paisId },
-                        success: function (response) {
-                            if (response && response.idDestino) {
-                                $('#DestinoNombre').val(response.nombreDestino);
-                                $('input[name="DestinoID"]').val(response.idDestino);
-                            } else {
-                                $('#DestinoNombre').val('');
-                                $('input[name="DestinoID"]').val('');
-                            }
-                        },
-                        error: function () {
-                            alert('Error al obtener el destino.');
-                        }
-                    });
-                } else {
+                if (!paisId) {
                     $('#DestinoNombre').val('');
                     $('input[name="DestinoID"]').val('');
+                    return;
                 }
+
+                $('#DestinoNombre').val('Cargando destino...');
+
+                $.get('@Url.Action("ObtenerDestino", "Tours")', { id: paisId }, function (response) {
+                    if (response && response.idDestino && response.nombre) {
+                        $('#DestinoNombre').val(response.nombre);
+                        $('input[name="DestinoID"]').val(response.idDestino);
+                    } else {
+                        $('#DestinoNombre').val('');
+                        $('input[name="DestinoID"]').val('');
+                    }
+                }).fail(function () {
+                    alert('Error al obtener el destino.');
+                    $('#DestinoNombre').val('');
+                    $('input[name="DestinoID"]').val('');
+                });
             });
         });
     </script>
 }
+

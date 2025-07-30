@@ -59,8 +59,9 @@ namespace AgenciaDeToursRD.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("Bandera")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -81,9 +82,6 @@ namespace AgenciaDeToursRD.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<int>("DestinoID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DestinoID1")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Fecha")
@@ -107,8 +105,6 @@ namespace AgenciaDeToursRD.Migrations
 
                     b.HasIndex("DestinoID");
 
-                    b.HasIndex("DestinoID1");
-
                     b.HasIndex("PaisID");
 
                     b.ToTable("Tours");
@@ -128,14 +124,10 @@ namespace AgenciaDeToursRD.Migrations
             modelBuilder.Entity("AgenciaDeToursRD.Models.Tour", b =>
                 {
                     b.HasOne("AgenciaDeToursRD.Models.Destino", "Destino")
-                        .WithMany()
+                        .WithMany("Tours")
                         .HasForeignKey("DestinoID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("AgenciaDeToursRD.Models.Destino", null)
-                        .WithMany("Tours")
-                        .HasForeignKey("DestinoID1");
 
                     b.HasOne("AgenciaDeToursRD.Models.Pais", "Pais")
                         .WithMany()

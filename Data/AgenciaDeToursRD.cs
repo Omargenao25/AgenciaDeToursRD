@@ -55,7 +55,6 @@ namespace AgenciaDeToursRD.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Tabla Tour
             modelBuilder.Entity<Tour>(entity =>
             {
                 entity.HasKey(t => t.ID);
@@ -68,7 +67,7 @@ namespace AgenciaDeToursRD.Data
                       .HasColumnType("decimal(18,2)");
 
                 entity.HasOne(t => t.Destino)
-                      .WithMany()
+                      .WithMany(d => d.Tours)
                       .HasForeignKey(t => t.DestinoID)
                       .OnDelete(DeleteBehavior.Restrict);
 

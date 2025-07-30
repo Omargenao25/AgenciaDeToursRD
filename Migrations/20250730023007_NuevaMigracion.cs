@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AgenciaDeToursRD.Migrations
 {
     /// <inheritdoc />
-    public partial class AgenciaTours : Migration
+    public partial class NuevaMigracion : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,7 +17,8 @@ namespace AgenciaDeToursRD.Migrations
                 {
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Bandera = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -56,8 +57,7 @@ namespace AgenciaDeToursRD.Migrations
                     PaisID = table.Column<int>(type: "int", nullable: false),
                     Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Hora = table.Column<TimeSpan>(type: "time", nullable: false),
-                    Precio = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DestinoID1 = table.Column<int>(type: "int", nullable: true)
+                    Precio = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,11 +68,6 @@ namespace AgenciaDeToursRD.Migrations
                         principalTable: "Destinos",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Tours_Destinos_DestinoID1",
-                        column: x => x.DestinoID1,
-                        principalTable: "Destinos",
-                        principalColumn: "ID");
                     table.ForeignKey(
                         name: "FK_Tours_Paises_PaisID",
                         column: x => x.PaisID,
@@ -90,11 +85,6 @@ namespace AgenciaDeToursRD.Migrations
                 name: "IX_Tours_DestinoID",
                 table: "Tours",
                 column: "DestinoID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tours_DestinoID1",
-                table: "Tours",
-                column: "DestinoID1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tours_PaisID",

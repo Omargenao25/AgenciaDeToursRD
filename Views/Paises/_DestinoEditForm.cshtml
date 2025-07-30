@@ -1,4 +1,5 @@
 ﻿@model AgenciaDeToursRD.Models.Destino
+
 @{
     var i = (int)ViewData["index"];
 }
@@ -6,13 +7,24 @@
 <tr>
     <td>
         <input type="hidden" name="Destinos[@i].ID" value="@Model.ID" />
-        <input type="text" name="Destinos[@i].Nombre" value="@Model.Nombre" class="form-control" />
+        <input type="text"
+               name="Destinos[@i].Nombre"
+               value="@Model.Nombre"
+               class="form-control"
+               placeholder="Nombre del destino" />
     </td>
     <td>
-        <input type="text" name="Destinos[@i].DuracionTexto" value="@Model.DuracionTexto" class="form-control" />
+        <input type="text"
+               name="Destinos[@i].DuracionTexto"
+               value="@Model.DuracionTexto"
+               class="form-control"
+               placeholder="Duración (ej: 3 días)" />
     </td>
     <td class="text-center">
-        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDestino(this)">
+        <button type="button"
+                class="btn btn-outline-danger btn-sm"
+                onclick="removeDestino(this)"
+                title="Eliminar destino">
             <i class="bi bi-x-lg"></i>
         </button>
     </td>

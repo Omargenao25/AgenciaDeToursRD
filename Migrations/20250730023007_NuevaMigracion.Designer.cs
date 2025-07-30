@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AgenciaDeToursRD.Migrations
 {
     [DbContext(typeof(AgenciaDeToursDbContext))]
-    [Migration("20250722033616_AgenciaTours")]
-    partial class AgenciaTours
+    [Migration("20250730023007_NuevaMigracion")]
+    partial class NuevaMigracion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,6 +61,11 @@ namespace AgenciaDeToursRD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
+                    b.Property<string>("Bandera")
+                        .HasMaxLength(255)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(255)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -80,9 +85,6 @@ namespace AgenciaDeToursRD.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<int>("DestinoID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DestinoID1")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Fecha")
@@ -106,8 +108,6 @@ namespace AgenciaDeToursRD.Migrations
 
                     b.HasIndex("DestinoID");
 
-                    b.HasIndex("DestinoID1");
-
                     b.HasIndex("PaisID");
 
                     b.ToTable("Tours");
@@ -127,14 +127,10 @@ namespace AgenciaDeToursRD.Migrations
             modelBuilder.Entity("AgenciaDeToursRD.Models.Tour", b =>
                 {
                     b.HasOne("AgenciaDeToursRD.Models.Destino", "Destino")
-                        .WithMany()
+                        .WithMany("Tours")
                         .HasForeignKey("DestinoID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("AgenciaDeToursRD.Models.Destino", null)
-                        .WithMany("Tours")
-                        .HasForeignKey("DestinoID1");
 
                     b.HasOne("AgenciaDeToursRD.Models.Pais", "Pais")
                         .WithMany()

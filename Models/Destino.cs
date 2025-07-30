@@ -7,11 +7,15 @@ namespace AgenciaDeToursRD.Models
         public int ID { get; set; }
 
         [Required(ErrorMessage = "El nombre del destino es obligatorio.")]
-        public string? Nombre { get; set; }
-        public int PaisId { get; internal set; }
+        public string Nombre { get; set; }
+
+        [Required]
+        public int PaisId { get; set; }
+
         public string? DuracionTexto { get; set; }
 
         public virtual Pais Pais { get; set; }
-        public ICollection<Tour>? Tours { get; set; }
+
+        public ICollection<Tour> Tours { get; set; } = new List<Tour>();
     }
 }

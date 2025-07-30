@@ -26,19 +26,12 @@ namespace AgenciaDeToursRD.Controllers
                     .Include(t => t.Destino)
                     .ToList();
 
-                if (tours == null || !tours.Any())
-                {
-                    TempData["InfoMessage"] = "No hay tours registrados en el sistema.";
-                }
-
-                return View(tours);
-            }
-            catch (Exception ex)
+            if (!tours.Any())
             {
-               
-                TempData["ErrorMessage"] = "Ocurrió un error al cargar los tours.";
-                return RedirectToAction("Error", "Home");
+                ViewBag.InfoMessage = "No hay tours registrados en el sistema.";
             }
+
+            return View(tours);
         }
 
 
@@ -79,28 +72,34 @@ namespace AgenciaDeToursRD.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(Tour tour)
         {
-            if (ModelState.IsValid)
+
+            try
             {
                 _context.Tours.Add(tour);
                 _context.SaveChanges();
                 return RedirectToAction("Index");
             }
+            catch (Exception ex)
+            {
 
-   
-            ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-            ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
-            return View(tour);
+                ModelState.AddModelError(string.Empty,$"Error al crear {ex.Message}");
+
+                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+                ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
+                return View(tour);
+            }
+
         }
 
 
 
-        // GET: ToursController/Edit/5
+ 
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: ToursController/Edit/5
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -115,13 +114,13 @@ namespace AgenciaDeToursRD.Controllers
             }
         }
 
-        // GET: ToursController/Delete/5
+     
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: ToursController/Delete/5
+    
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
@@ -141,42 +140,32 @@ namespace AgenciaDeToursRD.Controllers
         public JsonResult ObtenerDestino(int? id)
         {
             if (id == null)
-            {
                 return Json(null);
-            }
 
-            var pais = _context.Paises
-                .Include(t => t.Destinos)
-                .FirstOrDefault(t => t.ID == id.Value);
+         
+            var destinos = _context.Destinos
+                .Where(d => d.PaisId == id.Value)
+                .Select(d => new
+                {
+                    d.ID,
+                    d.Nombre,
+                    d.DuracionTexto
+                })
+                .ToList();
 
-            if (pais == null || pais.Destinos == null || !pais.Destinos.Any())
-            {
+            if (!destinos.Any())
                 return Json(null);
-            }
 
-            var destinos = pais.Destinos.ToList();
             Random aleatorio = new Random();
-            int indice = aleatorio.Next(destinos.Count);
-
-            var destinoSeleccionado = destinos[indice];
+            var destinoAleatorio = destinos[aleatorio.Next(destinos.Count)];
 
             return Json(new
             {
-                idDestino = destinoSeleccionado.ID,
-                nombreDestino = destinoSeleccionado.Nombre
+                idDestino = destinoAleatorio.ID,
+                nombre = destinoAleatorio.Nombre,
+                
             });
         }
 
-        public JsonResult GetDestinosPorPais(int paisId)
-        {
-            var destinos = _context.Destinos
-                .Where(d => d.PaisId == paisId)
-                .Select(d => new { d.ID, d.Nombre })
-                .ToList();
-
-            return Json(destinos);
-        }
-
     }
-
 }
