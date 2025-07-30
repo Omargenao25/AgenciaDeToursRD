@@ -26,146 +26,150 @@ namespace AgenciaDeToursRD.Controllers
                     .Include(t => t.Destino)
                     .ToList();
 
-            if (!tours.Any())
-            {
-                ViewBag.InfoMessage = "No hay tours registrados en el sistema.";
-            }
+                if (!tours.Any())
+                {
+                    ViewBag.InfoMessage = "No hay tours registrados en el sistema.";
+                }
 
-            return View(tours);
+                return View(tours);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"Error al cargar los tours: {ex.Message}";
+                return View(new List<Tour>());
+            }
         }
 
 
         public ActionResult Details(int? id)
-        {
-            if (!id.HasValue)
             {
-                TempData["ErrorMessage"] = "ID inválido para buscar detalles del tour.";
-                return RedirectToAction("Index");
-            }
+                if (!id.HasValue)
+                {
+                    TempData["ErrorMessage"] = "ID inválido para buscar detalles del tour.";
+                    return RedirectToAction("Index");
+                }
 
-            var tour = _context.Tours
-                .Include(t => t.Pais)
-                .Include(t => t.Destino)
-                .FirstOrDefault(t => t.ID == id.Value);
+                var tour = _context.Tours
+                    .Include(t => t.Pais)
+                    .Include(t => t.Destino)
+                    .FirstOrDefault(t => t.ID == id.Value);
 
-            if (tour == null)
-            {
-                TempData["ErrorMessage"] = "No se encontró el tour solicitado.";
-                return RedirectToAction("Index");
-            }
+                if (tour == null)
+                {
+                    TempData["ErrorMessage"] = "No se encontró el tour solicitado.";
+                    return RedirectToAction("Index");
+                }
 
-            return View(tour);
-        }
-
-
-
-        [HttpGet]
-        public ActionResult Create()
-        {
-            ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre");
-            ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
-            return View();
-        }
-
-        
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(Tour tour)
-        {
-
-            try
-            {
-                _context.Tours.Add(tour);
-                _context.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-
-                ModelState.AddModelError(string.Empty,$"Error al crear {ex.Message}");
-
-                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
                 return View(tour);
             }
 
-        }
 
 
-
- 
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
+            [HttpGet]
+            public ActionResult Create()
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-     
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-    
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
+                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre");
+                ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
                 return View();
             }
 
 
-        }
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public ActionResult Create(Tour tour)
+            {
 
-        public JsonResult ObtenerDestino(int? id)
-        {
-            if (id == null)
-                return Json(null);
-
-         
-            var destinos = _context.Destinos
-                .Where(d => d.PaisId == id.Value)
-                .Select(d => new
+                try
                 {
-                    d.ID,
-                    d.Nombre,
-                    d.DuracionTexto
-                })
-                .ToList();
+                    _context.Tours.Add(tour);
+                    _context.SaveChanges();
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
 
-            if (!destinos.Any())
-                return Json(null);
+                    ModelState.AddModelError(string.Empty, $"Error al crear {ex.Message}");
 
-            Random aleatorio = new Random();
-            var destinoAleatorio = destinos[aleatorio.Next(destinos.Count)];
+                    ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+                    ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
+                    return View(tour);
+                }
 
-            return Json(new
+            }
+
+
+            public ActionResult Edit(int id)
             {
-                idDestino = destinoAleatorio.ID,
-                nombre = destinoAleatorio.Nombre,
-                
-            });
-        }
+                return View();
+            }
 
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public ActionResult Edit(int id, IFormCollection collection)
+            {
+                try
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                catch
+                {
+                    return View();
+                }
+            }
+
+
+            public ActionResult Delete(int id)
+            {
+                return View();
+            }
+
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public ActionResult Delete(int id, IFormCollection collection)
+            {
+                try
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                catch
+                {
+                    return View();
+                }
+
+
+            }
+
+            public JsonResult ObtenerDestino(int? id)
+            {
+                if (id == null)
+                    return Json(null);
+
+
+                var destinos = _context.Destinos
+                    .Where(d => d.PaisId == id.Value)
+                    .Select(d => new
+                    {
+                        d.ID,
+                        d.Nombre,
+                        d.DuracionTexto
+                    })
+                    .ToList();
+
+                if (!destinos.Any())
+                    return Json(null);
+
+                Random aleatorio = new Random();
+                var destinoAleatorio = destinos[aleatorio.Next(destinos.Count)];
+
+                return Json(new
+                {
+                    idDestino = destinoAleatorio.ID,
+                    nombre = destinoAleatorio.Nombre,
+
+                });
+            }
+
+        }
     }
-}
