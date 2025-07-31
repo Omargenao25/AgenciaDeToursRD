@@ -1,0 +1,37 @@
+﻿@model AgenciaDeToursRD.Models.Tour
+
+@{
+    ViewBag.Title = "Eliminar Tour";
+}
+
+<h2 class="text-danger">¿Estás seguro de que quieres eliminar este tour?</h2>
+
+<div class="mt-4">
+    <dl class="row">
+        <dt class="col-sm-3">Nombre:</dt>
+        <dd class="col-sm-9">@Model.Nombre</dd>
+
+        <dt class="col-sm-3">Destino:</dt>
+        <dd class="col-sm-9">@Model.Destino?.Nombre</dd>
+
+        <dt class="col-sm-3">País:</dt>
+        <dd class="col-sm-9">@Model.Pais?.Nombre</dd>
+
+        <dt class="col-sm-3">Fecha:</dt>
+        <dd class="col-sm-9">@Model.Fecha.ToShortDateString()</dd>
+
+        <dt class="col-sm-3">Hora:</dt>
+        <dd class="col-sm-9">@Model.Hora.ToString(@"hh\:mm")</dd>
+
+        <dt class="col-sm-3">Precio:</dt>
+        <dd class="col-sm-9">@Model.Precio.ToString("C")</dd>
+    </dl>
+
+    @using (Html.BeginForm("DeleteConfirmed", "Tours", new { id = Model.ID }, FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary ms-2" })
+    }
+    
+

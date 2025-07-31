@@ -1,0 +1,56 @@
+﻿@model AgenciaDeToursRD.Models.Tour
+
+@{
+    ViewBag.Title = "Editar Tour";
+}
+
+<h2 class="mb-4">Editar Tour</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group mb-3">
+        @Html.LabelFor(model => model.Nombre)
+        @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        @Html.Label("País")
+        @Html.DropDownList("PaisID", null, "-- Seleccione un país --", new { @class = "form-control", onchange = "cargarDestinos(this.value);" })
+        @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        @Html.Label("Destino")
+        @Html.DropDownList("DestinoID", null, "-- Seleccione un destino --", new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.DestinoID, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        @Html.LabelFor(model => model.Fecha)
+        @Html.TextBoxFor(model => model.Fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Fecha, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        @Html.LabelFor(model => model.Hora)
+        @Html.TextBoxFor(model => model.Hora, "{0:hh\\:mm}", new { type = "time", @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Hora, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        @Html.LabelFor(model => model.Precio)
+        @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01" })
+        @Html.ValidationMessageFor(model => model.Precio, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar cambios</button>
+    @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary ms-2" })
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
