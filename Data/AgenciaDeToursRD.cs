@@ -66,6 +66,9 @@ namespace AgenciaDeToursRD.Data
                 entity.Property(t => t.Precio)
                       .HasColumnType("decimal(18,2)");
 
+               entity.Property(t => t.ITBIS)
+                     .HasColumnType("decimal(18,2)");
+
                 entity.HasOne(t => t.Destino)
                       .WithMany(d => d.Tours)
                       .HasForeignKey(t => t.DestinoID)

@@ -19,6 +19,7 @@ namespace AgenciaDeToursRD.Controllers
 
         public ActionResult Index()
         {
+
             try
             {
                 var tours = _context.Tours
@@ -30,6 +31,8 @@ namespace AgenciaDeToursRD.Controllers
                 {
                     ViewBag.InfoMessage = "No hay tours registrados en el sistema.";
                 }
+
+
 
                 return View(tours);
             }
@@ -74,28 +77,33 @@ namespace AgenciaDeToursRD.Controllers
             }
 
 
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public ActionResult Create(Tour tour)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Tour tour)
+        {
+            try
             {
-
-                try
+                if (tour.DestinoID <= 0 )
                 {
-                    _context.Tours.Add(tour);
-                    _context.SaveChanges();
-                    return RedirectToAction("Index");
-                }
-                catch (Exception ex)
-                {
-
-                    ModelState.AddModelError(string.Empty, $"Error al crear {ex.Message}");
-
+                    ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
                     ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
                     ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
                     return View(tour);
                 }
 
+                _context.Tours.Add(tour);
+                _context.SaveChanges();
+                return RedirectToAction("Index");
             }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Error al crear: {ex.Message}");
+                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+                ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
+                return View(tour);
+            }
+        }
+
 
 
         [HttpGet]
@@ -189,37 +197,36 @@ namespace AgenciaDeToursRD.Controllers
                 return RedirectToAction("Index");
             }
         }
-        
-        
+
+
         public JsonResult ObtenerDestino(int? id)
-            {
-                if (id == null)
-                    return Json(null);
+        {
+            if (id == null)
+                return Json(new { success = false, message = "ID de país no proporcionado" });
 
-
-                var destinos = _context.Destinos
-                    .Where(d => d.PaisId == id.Value)
-                    .Select(d => new
-                    {
-                        d.ID,
-                        d.Nombre,
-                        d.DuracionTexto
-                    })
-                    .ToList();
-
-                if (!destinos.Any())
-                    return Json(null);
-
-                Random aleatorio = new Random();
-                var destinoAleatorio = destinos[aleatorio.Next(destinos.Count)];
-
-                return Json(new
+            var destinos = _context.Destinos
+                .Where(d => d.PaisId == id.Value)
+                .Select(d => new
                 {
-                    idDestino = destinoAleatorio.ID,
-                    nombre = destinoAleatorio.Nombre,
+                    d.ID,
+                    d.Nombre,
+                    d.DuracionTexto
+                })
+                .ToList();
 
-                });
-            }
+            if (!destinos.Any())
+                return Json(new { success = false, message = "No se encontraron destinos para el país seleccionado" });
 
+            Random aleatorio = new Random();
+            var destinoAleatorio = destinos[aleatorio.Next(destinos.Count)];
+
+            return Json(new
+            {
+                success = true,
+                idDestino = destinoAleatorio.ID,
+                nombre = destinoAleatorio.Nombre,
+                duracion = destinoAleatorio.DuracionTexto
+            });
         }
     }
+}

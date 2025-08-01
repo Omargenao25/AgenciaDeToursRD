@@ -4,6 +4,7 @@ using AgenciaDeToursRD.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AgenciaDeToursRD.Migrations
 {
     [DbContext(typeof(AgenciaDeToursDbContext))]
-    partial class AgenciaDeToursDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250731224943_AddITBISFieldToTour")]
+    partial class AddITBISFieldToTour
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,16 +87,8 @@ namespace AgenciaDeToursRD.Migrations
                     b.Property<int>("DestinoID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaFin")
-                        .HasColumnType("datetime");
 
                     b.Property<TimeSpan>("Hora")
                         .HasColumnType("time");

@@ -31,6 +31,7 @@ else
                     <th>Nombre</th>
                     <th>Fecha</th>
                     <th>Hora</th>
+                    <th>Duración</th>
                     <th>Precio</th>
                     <th>Fecha Fin</th>
                     <th>Estado</th>
@@ -44,6 +45,7 @@ else
                         <td>@tour.Nombre</td>
                         <td>@tour.Fecha.ToString("dd/MM/yyyy")</td>
                         <td>@tour.Hora</td>
+                        <td>@tour.Duracion</td>
                         <td>@tour.Precio.ToString("C")</td>
                         <td>@tour.FechaFin.ToString("dd/MM/yyyy HH:mm")</td>
                         <td>@tour.Estado</td>
@@ -55,6 +57,9 @@ else
                     </tr>
                 }
             </tbody>
+
+                }
+          
         </table>
     </div>
 }
