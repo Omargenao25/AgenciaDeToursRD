@@ -41,6 +41,7 @@ namespace AgenciaDeToursRD.Controllers
 
             var pais = _context.Paises
                 .Include(p => p.Destinos)
+                .ThenInclude(d => d.Tours)
                 .FirstOrDefault(p => p.ID == id);
 
             if (pais != null)
