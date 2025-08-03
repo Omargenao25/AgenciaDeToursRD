@@ -107,18 +107,20 @@ namespace AgenciaDeToursRD.Controllers
 
 
         [HttpGet]
-        public ActionResult Edit(int id)
+        public IActionResult Edit(int id)
         {
-            var tour = _context.Tours.FirstOrDefault(t => t.ID == id);
+            var tour = _context.Tours
+                .Include(t => t.Destino)
+                .FirstOrDefault(t => t.ID == id);
 
             if (tour == null)
-            {
-                TempData["ErrorMessage"] = "No se encontró el tour para editar.";
-                return RedirectToAction("Index");
-            }
+                return NotFound();
 
-            ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-            ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
+            
+            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+
+            ViewBag.NombreDestino = tour.Destino?.Nombre ?? "";
+            ViewBag.DuracionDestino = tour.Destino?.DuracionTexto ?? "";
 
             return View(tour);
         }
@@ -134,7 +136,7 @@ namespace AgenciaDeToursRD.Controllers
                 ModelState.AddModelError("", "ID del tour no coincide.");
             }
 
-            if (ModelState.IsValid)
+
             {
                 try
                 {
@@ -145,13 +147,15 @@ namespace AgenciaDeToursRD.Controllers
                 catch (Exception ex)
                 {
                     ModelState.AddModelError("", $"Error al guardar cambios: {ex.Message}");
+
+
+                    ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+                    ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
+                    return View(tour);
                 }
             }
+            }
 
-            ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-            ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
-            return View(tour);
-        }
 
 
 
@@ -220,12 +224,20 @@ namespace AgenciaDeToursRD.Controllers
             Random aleatorio = new Random();
             var destinoAleatorio = destinos[aleatorio.Next(destinos.Count)];
 
+            var tourAsociado = _context.Tours
+                .Where(t => t.DestinoID == destinoAleatorio.ID)
+                .OrderBy(t => t.ID) 
+                .FirstOrDefault();
+
+            decimal precio = tourAsociado?.Precio ?? 0;
+
             return Json(new
             {
                 success = true,
                 idDestino = destinoAleatorio.ID,
                 nombre = destinoAleatorio.Nombre,
-                duracion = destinoAleatorio.DuracionTexto
+                duracion = destinoAleatorio.DuracionTexto,
+                precio = precio
             });
         }
     }
