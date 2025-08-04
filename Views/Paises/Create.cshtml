@@ -29,6 +29,7 @@
                 <div class="mb-4">
                     <label for="BanderaFile" class="form-label fw-bold">Bandera (JPG o PNG)</label>
                     <input type="file" name="BanderaFile" class="form-control" accept=".jpg,.jpeg,.png" />
+                    <span asp-validation-for="Bandera" class="text-danger small"></span> <!-- ✅ Corrección agregada -->
                 </div>
 
                 <hr />
@@ -89,22 +90,22 @@
 
         function addDestino() {
             const template = `
-                        <tr>
-                            <td>
-                                <input name="Destinos[${destinoIndex}].Nombre" class="form-control" />
-                                <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].Nombre" data-valmsg-replace="true"></span>
-                            </td>
-                            <td>
-                                <input name="Destinos[${destinoIndex}].DuracionTexto" class="form-control" />
-                                <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].DuracionTexto" data-valmsg-replace="true"></span>
-                            </td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDestino(this)">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                                <tr>
+                                    <td>
+                                        <input name="Destinos[${destinoIndex}].Nombre" class="form-control" />
+                                        <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].Nombre" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        <input name="Destinos[${destinoIndex}].DuracionTexto" class="form-control" />
+                                        <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].DuracionTexto" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDestino(this)">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
             document.getElementById("destinosBody").insertAdjacentHTML("beforeend", template);
             destinoIndex++;
         }

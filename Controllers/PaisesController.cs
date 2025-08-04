@@ -3,6 +3,7 @@ using AgenciaDeToursRD.Excepciones;
 using AgenciaDeToursRD.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
@@ -70,7 +71,7 @@ namespace AgenciaDeToursRD.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Pais pais, IFormFile BanderaFile)
+        public async Task<IActionResult> Create(Pais pais, IFormFile? BanderaFile)
         {
             try
             {
@@ -81,37 +82,42 @@ namespace AgenciaDeToursRD.Controllers
 
                 if (_context.Paises.Any(p => p.Nombre == pais.Nombre.ToUpperInvariant().Trim()))
                 {
-                    ModelState.AddModelError(string.Empty, "No se admiten paises duplicados");
+                    ModelState.AddModelError(string.Empty, "No se admiten países duplicados");
                     return View(pais);
                 }
 
-                // Procesar imagen bandera (si hay archivo)
-                string? banderaUrl = null;
-                if (BanderaFile != null && BanderaFile.Length > 0)
+          
+                if (BanderaFile == null || BanderaFile.Length == 0)
                 {
-                    var extension = Path.GetExtension(BanderaFile.FileName).ToLowerInvariant();
-                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-                    if (!allowedExtensions.Contains(extension))
-                    {
-                        ModelState.AddModelError(string.Empty, "Solo se permiten imágenes JPG o PNG.");
-                        return View(pais);
-                    }
-
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
-
-                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await BanderaFile.CopyToAsync(stream);
-
-                    banderaUrl = $"/uploads/{uniqueFileName}";
+                    ModelState.AddModelError("Bandera", "La bandera es obligatoria.");
+                    return View(pais);
                 }
 
-                var destinosValidos = new List<Destino>();
+                var extension = Path.GetExtension(BanderaFile.FileName).ToLowerInvariant();
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("Bandera", "Solo se permiten imágenes JPG o PNG.");
+                    return View(pais);
+                }
 
+            
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await BanderaFile.CopyToAsync(stream);
+
+                var banderaUrl = $"/uploads/{uniqueFileName}";
+
+            
+                var destinosValidos = new List<Destino>();
                 var nombresDestinos = pais.Destinos
                     .Where(d => !string.IsNullOrWhiteSpace(d.Nombre))
                     .Select(d => d?.Nombre?.ToUpper().Trim())
@@ -144,6 +150,7 @@ namespace AgenciaDeToursRD.Controllers
                     destinosValidos.Add(destino);
                 }
 
+               
                 var newPais = new Pais
                 {
                     Nombre = pais.Nombre.ToUpper().Trim(),
@@ -153,9 +160,10 @@ namespace AgenciaDeToursRD.Controllers
 
                 _context.Paises.Add(newPais);
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ModelState.AddModelError(string.Empty, $"Error al intentar guardar los datos");
                 return View(pais);
@@ -183,64 +191,81 @@ namespace AgenciaDeToursRD.Controllers
             return View(pais);
         }
 
-        public async Task<IActionResult> Edit(int id, Pais pais, IFormFile BanderaFile)
+
+        public async Task<IActionResult> Edit(int id, Pais pais)
         {
             try
             {
                 var paisExistente = await _context.Paises
                     .Include(p => p.Destinos)
+                        .ThenInclude(d => d.Tours)
                     .FirstOrDefaultAsync(p => p.ID == id);
 
                 if (paisExistente == null)
                     return NotFound();
 
-                // Validar y procesar archivo de bandera si se subió uno
-                if (BanderaFile != null && BanderaFile.Length > 0)
-                {
-                    var banderaError = await ProcesarArchivoBandera(paisExistente, BanderaFile);
-                    if (!string.IsNullOrEmpty(banderaError))
-                    {
-                        ModelState.AddModelError(string.Empty, banderaError);
-                        return View(paisExistente);
-                    }
-                }
-
-                // Validar nombre país
+                // Validar nombre del país
                 var nombrePais = pais?.Nombre?.ToUpperInvariant().Trim();
-
                 var nombreError = ValidarNombrePais(nombrePais, pais.ID);
 
                 if (!string.IsNullOrEmpty(nombreError))
                 {
                     ModelState.AddModelError(string.Empty, nombreError);
+                    paisExistente.Destinos = paisExistente.Destinos.ToList();
                     return View(paisExistente);
                 }
 
-                // Actualizar datos del país
+                // Actualizar datos
                 paisExistente.Nombre = nombrePais;
 
-                await ActualizarDestinos(paisExistente, pais.Destinos ?? new List<Destino>());
+                var destinosEnviados = pais.Destinos ?? new List<Destino>();
 
-                EliminarDestinosNoExistentes(paisExistente, pais.Destinos);
+                await ActualizarDestinos(paisExistente, destinosEnviados);
+                EliminarDestinosNoExistentes(paisExistente, destinosEnviados);
 
-                await _context.SaveChangesAsync();
+                // Validar ModelState después de aplicar eliminaciones
+                if (!ModelState.IsValid)
+                {
+                    paisExistente.Destinos = paisExistente.Destinos.ToList();
+                    return View(paisExistente);
+                }
 
-                TempData["SuccessMessage"] = "¡El país se actualizó correctamente!";
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "¡El país se actualizó correctamente!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException ex)
+                {
+                    if (ex.InnerException is SqlException sqlEx &&
+                        sqlEx.Message.Contains("FK_Tours_Destinos_DestinoID"))
+                    {
+                        ModelState.AddModelError("", "Este destino no puede eliminarse porque tiene tours asociados.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Ha ocurrido un error al guardar los cambios.");
+                    }
 
-                return RedirectToAction(nameof(Index));
+                    paisExistente.Destinos = paisExistente.Destinos.ToList();
+                    return View(paisExistente);
+                }
             }
             catch (ValidationErrorsException vex)
             {
                 ViewData["ValidationErrors"] = vex.Errors;
-
                 foreach (var error in vex.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error);
                 }
 
+                pais.Destinos = pais.Destinos ?? new List<Destino>();
                 return View(pais);
             }
         }
+
+
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -270,7 +295,7 @@ namespace AgenciaDeToursRD.Controllers
             if (paisExistente.Destinos == null)
                 paisExistente.Destinos = new List<Destino>();
 
-            // Inicializar nombres con los destinos existentes (en mayúsculas y trim)
+            
             var nombresDestinos = paisExistente.Destinos
                 .Where(d => !string.IsNullOrWhiteSpace(d?.Nombre))
                 .Select(d => d.Nombre.ToUpper().Trim())
@@ -393,21 +418,31 @@ namespace AgenciaDeToursRD.Controllers
 
         private void EliminarDestinosNoExistentes(Pais paisExistente, ICollection<Destino>? destinosEnviados)
         {
-            var idsEnviados = destinosEnviados == null
-                ? new List<int>()
-                : destinosEnviados.Where(d => d.ID != 0).Select(d => d.ID).ToList();
+            var destinosOriginales = paisExistente.Destinos.ToList();
 
-            var destinosAEliminar = paisExistente.Destinos
-                .Where(d => !idsEnviados.Contains(d.ID))
-                .ToList();
+            // Si la lista enviada es null, la convertimos en una lista vacía
+            var destinosVista = destinosEnviados ?? new List<Destino>();
 
-            foreach (var destino in destinosAEliminar)
+            foreach (var destino in destinosOriginales)
             {
-                if (destino.ID > 0)
+                bool destinoExisteEnVista = destinosVista.Any(d => d.ID == destino.ID);
+
+                if (!destinoExisteEnVista)
                 {
-                    _context.Destinos.Remove(destino);
+                    // Verificamos si el destino tiene tours asociados
+                    bool tieneTours = _context.Tours.Any(t => t.DestinoID == destino.ID);
+
+                    if (tieneTours)
+                    {
+                        ModelState.AddModelError("", $"El destino '{destino.Nombre}' no puede ser eliminado porque tiene tours asociados.");
+                        continue; // No se elimina, se registra el error
+                    }
+
+                    _context.Destinos.Remove(destino); // Se elimina si no tiene tours
                 }
             }
         }
+
+
     }
 }

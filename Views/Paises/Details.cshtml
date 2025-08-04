@@ -17,6 +17,15 @@
         <h2 class="mb-0 text-primary">Detalles de <strong>@Model.Nombre</strong></h2>
     </div>
 
+ 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     @if (Model.Destinos != null && Model.Destinos.Any())
     {
         <div class="row row-cols-1 row-cols-md-2 g-4">
@@ -34,8 +43,17 @@
                                     @foreach (var tour in destino.Tours)
                                     {
                                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <span>@tour.Nombre</span>
-                                            <span class="badge bg-primary rounded-pill">$@tour.Precio</span>
+                                            <div>
+                                                <strong>@tour.Nombre</strong> <span class="text-muted ms-2">($@tour.Precio)</span>
+                                            </div>
+
+                                            <form asp-controller="Tours"
+                                                  asp-action="DeleteConfirmed"
+                                                  asp-route-id="@tour.ID"
+                                                  method="post"
+                                                  onsubmit="return confirm('¿Estás seguro de que deseas eliminar este tour?')">
+                                                <button type="submit" class="btn btn-sm btn-danger">🗑 Eliminar</button>
+                                            </form>
                                         </li>
                                     }
                                 </ul>
@@ -59,7 +77,6 @@
 
     <div class="d-flex gap-2">
         <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Editar</a>
-        <a asp-action="Delete" asp-route-id="@Model.ID" class="btn btn-danger">Eliminar</a>
         <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
     </div>
 </div>

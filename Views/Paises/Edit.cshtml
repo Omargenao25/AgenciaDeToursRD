@@ -18,21 +18,19 @@
 
         <div class="card-body">
 
-            @* Mostrar errores personalizados de Validación si existen *@
-            @if (ViewData["ValidationErrors"] is List<string> errores && errores.Any())
+            @* Mostrar errores de ModelState (incluye los de eliminación de destinos con tours) *@
+            @if (!ViewData.ModelState.IsValid)
             {
-                <div class="alert alert-danger">
+                <div class="alert alert-danger d-flex align-items-start">
+                    <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
                     <ul class="mb-0">
-                        @foreach (var error in errores)
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                         {
-                            <li>@error</li>
+                            <li>@error.ErrorMessage</li>
                         }
                     </ul>
                 </div>
             }
-
-            @* Mostrar errores de validación que estén en ModelState *@
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <form asp-action="Edit" enctype="multipart/form-data" class="needs-validation" novalidate>
                 <input type="hidden" asp-for="ID" />
@@ -131,14 +129,15 @@
         }
 
         function addDestino() {
+            const index = destinoIndex;
             const row = `
                         <tr>
                             <td>
-                                <input type="hidden" name="Destinos[${destinoIndex}].ID" value="0" />
-                                <input name="Destinos[${destinoIndex}].Nombre" class="form-control" />
+                                <input type="hidden" name="Destinos[${index}].ID" value="0" />
+                                <input name="Destinos[${index}].Nombre" class="form-control" />
                             </td>
                             <td>
-                                <input name="Destinos[${destinoIndex}].DuracionTexto" class="form-control" />
+                                <input name="Destinos[${index}].DuracionTexto" class="form-control" />
                             </td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDestino(this)">

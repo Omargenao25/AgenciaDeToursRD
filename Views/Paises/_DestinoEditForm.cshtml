@@ -1,5 +1,4 @@
 ﻿@model AgenciaDeToursRD.Models.Destino
-
 @{
     var i = (int)ViewData["index"];
 }
@@ -21,11 +20,23 @@
                placeholder="Duración (ej: 3 días)" />
     </td>
     <td class="text-center">
-        <button type="button"
-                class="btn btn-outline-danger btn-sm"
-                onclick="removeDestino(this)"
-                title="Eliminar destino">
-            <i class="bi bi-x-lg"></i>
-        </button>
+        @if (Model.Tours != null && Model.Tours.Any())
+        {
+            <button type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="alert('Este destino no se puede eliminar porque tiene tours asociados.')"
+                    title="Destino en uso">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        }
+        else
+        {
+            <button type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="removeDestino(this)"
+                    title="Eliminar destino">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        }
     </td>
 </tr>

@@ -16,7 +16,7 @@ namespace AgenciaDeToursRD.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Tabla Pais
+         
             modelBuilder.Entity<Pais>(entity =>
             {
                 entity.HasKey(p => p.ID);
@@ -35,7 +35,6 @@ namespace AgenciaDeToursRD.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Tabla Destino
             modelBuilder.Entity<Destino>(entity =>
             {
                 entity.HasKey(d => d.ID);

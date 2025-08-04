@@ -176,7 +176,6 @@ namespace AgenciaDeToursRD.Controllers
             return View(tour);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
@@ -193,7 +192,8 @@ namespace AgenciaDeToursRD.Controllers
             {
                 _context.Tours.Remove(tour);
                 _context.SaveChanges();
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", "Paises", new { id = tour.PaisID });
+
             }
             catch (Exception ex)
             {
@@ -201,6 +201,7 @@ namespace AgenciaDeToursRD.Controllers
                 return RedirectToAction("Index");
             }
         }
+
 
 
         public JsonResult ObtenerDestino(int? id)
