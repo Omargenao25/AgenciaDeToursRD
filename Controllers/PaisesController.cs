@@ -264,29 +264,52 @@ namespace AgenciaDeToursRD.Controllers
                 return View(pais);
             }
         }
-
-
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+   
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
         {
-            var pais = _context.Paises
+            var pais = await _context.Paises
                 .Include(p => p.Destinos)
-                .FirstOrDefault(p => p.ID == id);
+                .FirstOrDefaultAsync(p => p.ID == id);
 
             if (pais == null)
                 return NotFound();
 
+            return View(pais);
+        }
+
+       
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var pais = await _context.Paises
+                .Include(p => p.Destinos)
+                .FirstOrDefaultAsync(p => p.ID == id);
+
+            if (pais == null)
+                return NotFound();
 
             if (pais.Destinos != null && pais.Destinos.Any())
-                _context.Destinos.RemoveRange(pais.Destinos);
+            {
+                TempData["ErrorMessage"] = "No se puede eliminar un país que tenga destinos asociados.";
+                return RedirectToAction(nameof(Index));
+            }
 
-            _context.Paises.Remove(pais);
-            _context.SaveChanges();
+            try
+            {
+                _context.Paises.Remove(pais);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "El país fue eliminado correctamente.";
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "Error al intentar eliminar el país.";
+            }
 
             return RedirectToAction(nameof(Index));
         }
+
 
         private async Task ActualizarDestinos(Pais paisExistente, ICollection<Destino> destinos)
         {

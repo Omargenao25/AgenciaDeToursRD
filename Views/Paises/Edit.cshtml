@@ -18,7 +18,7 @@
 
         <div class="card-body">
 
-            @* Mostrar errores de ModelState (incluye los de eliminación de destinos con tours) *@
+            @* Mostrar errores de ModelState *@
             @if (!ViewData.ModelState.IsValid)
             {
                 <div class="alert alert-danger d-flex align-items-start">
@@ -118,6 +118,9 @@
 
                 const inputID = row.querySelector('input[name$=".ID"]');
                 if (inputID) inputID.name = `Destinos[${index}].ID`;
+
+                const inputPais = row.querySelector('input[name$=".PaisId"]');
+                if (inputPais) inputPais.name = `Destinos[${index}].PaisId`;
             });
 
             destinoIndex = rows.length;
@@ -130,10 +133,13 @@
 
         function addDestino() {
             const index = destinoIndex;
+            const paisId = @Model.ID;
+
             const row = `
                         <tr>
                             <td>
                                 <input type="hidden" name="Destinos[${index}].ID" value="0" />
+                                <input type="hidden" name="Destinos[${index}].PaisId" value="${paisId}" />
                                 <input name="Destinos[${index}].Nombre" class="form-control" />
                             </td>
                             <td>

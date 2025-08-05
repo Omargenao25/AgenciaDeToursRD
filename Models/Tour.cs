@@ -21,7 +21,7 @@ namespace AgenciaDeToursRD.Models
         [Required(ErrorMessage = "Debe seleccionar un país.")]
         public int PaisID { get; set; }
 
-        public virtual Pais Pais { get; set; }
+        public virtual Pais? Pais { get; set; }
 
         [Required(ErrorMessage = "Debe seleccionar una fecha.")]
         public DateTime Fecha { get; set; }

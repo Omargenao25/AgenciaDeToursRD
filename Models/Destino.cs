@@ -14,7 +14,7 @@ namespace AgenciaDeToursRD.Models
 
         public string? DuracionTexto { get; set; }
 
-        public virtual Pais Pais { get; set; }
+        public virtual Pais? Pais { get; set; }
 
         public ICollection<Tour> Tours { get; set; } = new List<Tour>();
     }

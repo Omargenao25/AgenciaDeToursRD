@@ -1,23 +1,36 @@
 ﻿@model AgenciaDeToursRD.Models.Pais
 
+@{
+    ViewData["Title"] = "Eliminar País";
+}
+
 <h2>¿Confirmar eliminación?</h2>
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
 <p>¿Estás seguro de que deseas eliminar el país <strong>@Model.Nombre</strong>?</p>
 
 @if (Model.Destinos != null && Model.Destinos.Any())
 {
-    <p>También se eliminarán los siguientes destinos:</p>
+    <div class="alert alert-warning">
+        <strong>Advertencia:</strong> Este país tiene destinos asociados y no se puede eliminar.
+    </div>
+
+    <p>Destinos relacionados:</p>
     <ul>
         @foreach (var destino in Model.Destinos)
         {
             <li>@destino.Nombre</li>
         }
     </ul>
+
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
 }
-
-<form asp-action="Delete" method="post">
-    <input type="hidden" asp-for="ID" />
-    <button type="submit" class="btn btn-danger">Eliminar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
-
+else
+{
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="ID" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+}
