@@ -83,11 +83,21 @@ namespace AgenciaDeToursRD.Controllers
         {
             try
             {
-                if (tour.DestinoID <= 0 )
+       
+                if (tour.DestinoID <= 0)
                 {
                     ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
+                }
+
+                if (_context.Tours.Any(t => t.Nombre == tour.Nombre))
+                {
+                    ModelState.AddModelError("Nombre", "Ya existe un tour con ese nombre.");
+                }
+
+                if (!ModelState.IsValid)
+                {
                     ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                    ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
+                    ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
                     return View(tour);
                 }
 
@@ -99,10 +109,11 @@ namespace AgenciaDeToursRD.Controllers
             {
                 ModelState.AddModelError(string.Empty, $"Error al crear: {ex.Message}");
                 ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
+                ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
                 return View(tour);
             }
         }
+
 
 
 
@@ -111,19 +122,22 @@ namespace AgenciaDeToursRD.Controllers
         {
             var tour = _context.Tours
                 .Include(t => t.Destino)
+                .ThenInclude(d => d.Pais)
                 .FirstOrDefault(t => t.ID == id);
 
             if (tour == null)
                 return NotFound();
 
-            
-            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-
+            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", tour.Destino.PaisId); 
             ViewBag.NombreDestino = tour.Destino?.Nombre ?? "";
             ViewBag.DuracionDestino = tour.Destino?.DuracionTexto ?? "";
+            ViewBag.ITBIS = tour.ITBIS.ToString("0.00");
+            ViewBag.FechaFin = tour.FechaFin.ToString("yyyy-MM-dd");
+            ViewBag.Estado = tour.Estado;
 
             return View(tour);
         }
+
 
 
 
@@ -136,27 +150,38 @@ namespace AgenciaDeToursRD.Controllers
                 ModelState.AddModelError("", "ID del tour no coincide.");
             }
 
-
+          
+            if (_context.Tours.Any(t => t.Nombre == tour.Nombre && t.ID != tour.ID))
             {
-                try
-                {
-                    _context.Tours.Update(tour);
-                    _context.SaveChanges();
-                    return RedirectToAction("Index");
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", $"Error al guardar cambios: {ex.Message}");
-
-
-                    ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                    ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
-                    return View(tour);
-                }
-            }
+                ModelState.AddModelError("Nombre", "Ya existe otro tour con ese nombre.");
             }
 
+            if (tour.DestinoID <= 0)
+            {
+                ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
+            }
 
+            if (!ModelState.IsValid)
+            {
+                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+                ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
+                return View(tour);
+            }
+
+            try
+            {
+                _context.Tours.Update(tour);
+                _context.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error al guardar cambios: {ex.Message}");
+                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+                ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
+                return View(tour);
+            }
+        }
 
 
         [HttpGet]
@@ -204,6 +229,19 @@ namespace AgenciaDeToursRD.Controllers
 
 
 
+        public JsonResult DestinosPorPais(int id)
+        {
+            var destinos = _context.Destinos
+                .Where(d => d.PaisId == id)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.ID.ToString(),
+                    Text = d.Nombre
+                }).ToList();
+
+            return Json(destinos);
+        }
+
         public JsonResult ObtenerDestino(int? id)
         {
             if (id == null)
@@ -227,7 +265,7 @@ namespace AgenciaDeToursRD.Controllers
 
             var tourAsociado = _context.Tours
                 .Where(t => t.DestinoID == destinoAleatorio.ID)
-                .OrderBy(t => t.ID) 
+                .OrderBy(t => t.ID)
                 .FirstOrDefault();
 
             decimal precio = tourAsociado?.Precio ?? 0;

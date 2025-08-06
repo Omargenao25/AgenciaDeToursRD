@@ -42,7 +42,6 @@ namespace AgenciaDeToursRD.Models
         [MaxLength(20)]
         public string Estado { get; set; } 
 
-        [NotMapped]
         public string Duracion => Destino?.DuracionTexto ?? "";
 
 

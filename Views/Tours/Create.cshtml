@@ -11,10 +11,11 @@
     @Html.AntiForgeryToken()
 
     <div class="card shadow-sm p-4 bg-light">
-        <div class="mb-3">
-            @Html.LabelFor(model => model.Nombre)
-            @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control" })
-            @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
+
+        <div class="form-group">
+            <label asp-for="Nombre" class="control-label"></label>
+            <input asp-for="Nombre" class="form-control" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
@@ -32,44 +33,41 @@
             </span>
         </div>
 
-
         <div class="mb-3">
             @Html.LabelFor(model => model.Fecha)
-            @Html.TextBoxFor(model => model.Fecha, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control" })
+            @Html.TextBoxFor(model => model.Fecha, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control", @id = "Fecha" })
             @Html.ValidationMessageFor(model => model.Fecha, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.Hora)
-            @Html.TextBoxFor(model => model.Hora, "{0:hh\\:mm}", new { @type = "time", @class = "form-control" })
+            @Html.TextBoxFor(model => model.Hora, "{0:hh\\:mm}", new { @type = "time", @class = "form-control", @id = "Hora" })
             @Html.ValidationMessageFor(model => model.Hora, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.FechaFin)
-            @Html.TextBoxFor(model => model.FechaFin, "{0:dd/MM/yyyy HH:mm}", new { @class = "form-control", @readonly = "readonly" })
+            @Html.TextBoxFor(model => model.FechaFin, "{0:dd/MM/yyyy HH:mm}", new { @class = "form-control", @readonly = "readonly", @id = "FechaFin" })
             @Html.ValidationMessageFor(model => model.FechaFin, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.Estado)
-            @Html.TextBoxFor(model => model.Estado, new { @class = "form-control", @readonly = "readonly" })
+            @Html.TextBoxFor(model => model.Estado, new { @class = "form-control", @readonly = "readonly", @id = "Estado" })
             @Html.ValidationMessageFor(model => model.Estado, "", new { @class = "text-danger" })
         </div>
 
-
         <div class="mb-3">
             @Html.LabelFor(model => model.Precio)
-            @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01", type = "number" })
+            @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01", type = "number", @id = "Precio" })
             @Html.ValidationMessageFor(model => model.Precio, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.ITBIS)
-            @Html.TextBoxFor(model => model.ITBIS, new { @class = "form-control", @readonly = "readonly" })
+            @Html.TextBoxFor(model => model.ITBIS, new { @class = "form-control", @readonly = "readonly", @id = "ITBIS" })
             @Html.ValidationMessageFor(model => model.ITBIS, "", new { @class = "text-danger" })
         </div>
-
 
         <button type="submit" class="btn btn-primary">Guardar</button>
         @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary ms-2" })
@@ -80,7 +78,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-       
+
         $(document).ready(function () {
             $('#PaisID').change(function () {
                 var paisId = $(this).val();
@@ -120,7 +118,7 @@
                 actualizarFechaFinYEstado();
             });
 
-            
+
             function actualizarFechaFinYEstado() {
                 var duracion = $('#DestinoNombre').data('duracion');
                 var fecha = $('#Fecha').val();
@@ -132,7 +130,7 @@
                     return;
                 }
 
-               
+
                 var dias = 0;
                 var match = duracion.match(/(\d+)\s*d[ií]as?/i);
                 if (match) dias = parseInt(match[1]);
@@ -141,7 +139,7 @@
 
                 fechaHoraInicio.setDate(fechaHoraInicio.getDate() + dias);
 
-                
+
                 var opciones = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
                 var fechaFinStr = fechaHoraInicio.toLocaleString('es-ES', opciones);
 
@@ -152,7 +150,7 @@
             }
         });
 
-       
+
         $(function () {
             $('#Precio').on('input', function () {
                 const precio = parseFloat($(this).val());
@@ -162,5 +160,3 @@
         });
     </script>
 }
-
-

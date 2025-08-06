@@ -4,18 +4,21 @@
     ViewBag.Title = "Editar Tour";
 }
 
-<h2 class="mb-4">Editar Tour</h2>
+<h2 class="mb-4">Editar tour</h2>
 
-@using (Html.BeginForm("Edit", "Tours", FormMethod.Post))
+@using (Html.BeginForm("Edit", "Tours", FormMethod.Post, new { id = Model.ID }))
 {
     @Html.AntiForgeryToken()
 
     <div class="card shadow-sm p-4 bg-light">
-        <div class="mb-3">
-            @Html.LabelFor(model => model.Nombre)
-            @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control" })
-            @Html.ValidationMessageFor(model => model.Nombre, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.ID)
+
+        <div class="form-group">
+            <label asp-for="Nombre" class="control-label"></label>
+            <input asp-for="Nombre" class="form-control" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
         </div>
+
 
         <div class="mb-3">
             @Html.LabelFor(model => model.PaisID)
@@ -25,9 +28,8 @@
 
         <div class="mb-3">
             @Html.Label("Destino")
-            <input type="text" id="DestinoNombre" class="form-control" readonly value="@ViewBag.NombreDestino" />
+            <input type="text" id="DestinoNombre" class="form-control" value="@ViewBag.NombreDestino" readonly />
             @Html.HiddenFor(model => model.DestinoID, new { id = "DestinoID" })
-
             <span class="text-danger">
                 @Html.ValidationMessageFor(model => model.DestinoID)
             </span>
@@ -59,7 +61,7 @@
 
         <div class="mb-3">
             @Html.LabelFor(model => model.Precio)
-            @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", @readonly = "readonly", @id = "Precio" })
+            @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01", type = "number", @id = "Precio" })
             @Html.ValidationMessageFor(model => model.Precio, "", new { @class = "text-danger" })
         </div>
 
@@ -69,7 +71,7 @@
             @Html.ValidationMessageFor(model => model.ITBIS, "", new { @class = "text-danger" })
         </div>
 
-        <button type="submit" class="btn btn-success">Guardar cambios</button>
+        <button type="submit" class="btn btn-success">Actualizar</button>
         @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary ms-2" })
     </div>
 }
@@ -80,57 +82,60 @@
     <script>
         $(document).ready(function () {
             $('#PaisID').change(function () {
-                var paisId = $(this).val();
+                const paisId = $(this).val();
 
-                if (paisId) {
-                    $('#DestinoNombre').val('Cargando destino...');
-                    $('#Precio').val(''); // Limpia el precio antes de cargar
-
-                    $.ajax({
-                        url: '@Url.Action("ObtenerDestino", "Tours")',
-                        type: 'GET',
-                        data: { id: paisId },
-                        success: function (response) {
-                            if (!response || !response.success) {
-                                $('#DestinoNombre').val('');
-                                $('#DestinoID').val('');
-                                $('#FechaFin').val('');
-                                $('#Estado').val('');
-                                $('#Precio').val('');
-                                $('#ITBIS').val('');
-                                return;
-                            }
-
-                            $('#DestinoNombre').val(response.nombre);
-                            $('#DestinoID').val(response.idDestino);
-                            $('#DestinoNombre').data('duracion', response.duracion);
-
-                            // 👉 Nuevo: Actualiza el precio desde backend
-                            $('#Precio').val(response.precio);
-
-                            // 👉 Nuevo: Calcula automáticamente el ITBIS
-                            const itbis = (parseFloat(response.precio) * 0.18).toFixed(2);
-                            $('#ITBIS').val(isNaN(itbis) ? '0.00' : itbis);
-
-                            actualizarFechaFinYEstado();
-                        }
-                    });
-                } else {
+                if (!paisId) {
                     $('#DestinoNombre').val('');
                     $('#DestinoID').val('');
                     $('#FechaFin').val('');
                     $('#Estado').val('');
                     $('#Precio').val('');
                     $('#ITBIS').val('');
+                    return;
                 }
+
+                $('#DestinoNombre').val('Cargando destino...');
+
+                $.ajax({
+                    url: '@Url.Action("ObtenerDestino", "Tours")',
+                    type: 'GET',
+                    data: { id: paisId },
+                    success: function (response) {
+                        if (!response || !response.success) {
+                            $('#DestinoNombre').val('');
+                            $('#DestinoID').val('');
+                            $('#FechaFin').val('');
+                            $('#Estado').val('');
+                            $('#Precio').val('');
+                            $('#ITBIS').val('');
+                            return;
+                        }
+
+                        $('#DestinoNombre').val(response.nombre);
+                        $('#DestinoID').val(response.idDestino);
+                        $('#DestinoNombre').data('duracion', response.duracion);
+                        $('#Precio').val(response.precio.toFixed(2)).trigger('input');
+
+                        actualizarFechaFinYEstado();
+                    }
+                });
             });
 
             $('#Fecha, #Hora').change(function () {
                 actualizarFechaFinYEstado();
             });
 
+            $('#Precio').on('input', function () {
+                const precio = parseFloat($(this).val());
+                const itbis = isNaN(precio) ? 0 : (precio * 0.18).toFixed(2);
+                $('#ITBIS').val(itbis);
+            });
+
+            $('#Precio').trigger('input');
+            actualizarFechaFinYEstado();
+
             function actualizarFechaFinYEstado() {
-                var duracion = $('#DestinoNombre').data('duracion');
+                var duracion = $('#DestinoNombre').data('duracion') || '@ViewBag.DuracionDestino';
                 var fecha = $('#Fecha').val();
                 var hora = $('#Hora').val();
 
@@ -156,16 +161,6 @@
                 $('#Estado').val(fechaHoraInicio > ahora ? 'Vigente' : 'Vencido');
             }
         });
-
-      
-        $(function () {
-            $('#Precio').on('input', function () {
-                const precio = parseFloat($(this).val());
-                const itbis = isNaN(precio) ? 0 : (precio * 0.18).toFixed(2);
-                $('#ITBIS').val(itbis);
-            });
-        });
     </script>
 }
-
-
+ 

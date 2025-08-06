@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AgenciaDeToursRD.Models
 {
@@ -12,9 +14,10 @@ namespace AgenciaDeToursRD.Models
         [Required]
         public int PaisId { get; set; }
 
-        public string? DuracionTexto { get; set; }
-
+        [ForeignKey("PaisId")]
         public virtual Pais? Pais { get; set; }
+
+        public string? DuracionTexto { get; set; }
 
         public ICollection<Tour> Tours { get; set; } = new List<Tour>();
     }
