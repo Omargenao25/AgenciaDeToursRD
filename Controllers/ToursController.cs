@@ -1,5 +1,6 @@
 ﻿using AgenciaDeToursRD.Data;
 using AgenciaDeToursRD.Models;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,6 +17,57 @@ namespace AgenciaDeToursRD.Controllers
         {
             _context = context;
         }
+
+
+        public FileResult ExportToursToCsv()
+        {
+            var tours = _context.Tours
+                .Include(t => t.Destino)
+                .Include(t => t.Destino.Pais)
+                .ToList();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Tours");
+
+                // Encabezados
+                worksheet.Cell(1, 1).Value = "Nombre";
+                worksheet.Cell(1, 2).Value = "País";
+                worksheet.Cell(1, 3).Value = "Destino";
+                worksheet.Cell(1, 4).Value = "Fecha";
+                worksheet.Cell(1, 5).Value = "Hora";
+                worksheet.Cell(1, 6).Value = "Duración";
+                worksheet.Cell(1, 7).Value = "Fecha Fin";
+                worksheet.Cell(1, 8).Value = "Estado";
+                worksheet.Cell(1, 9).Value = "Precio";
+                worksheet.Cell(1, 10).Value = "ITBIS";
+
+                // Datos
+                for (int i = 0; i < tours.Count; i++)
+                {
+                    var t = tours[i];
+                    worksheet.Cell(i + 2, 1).Value = t.Nombre;
+                    worksheet.Cell(i + 2, 2).Value = t.Destino?.Pais?.Nombre;
+                    worksheet.Cell(i + 2, 3).Value = t.Destino?.Nombre;
+                    worksheet.Cell(i + 2, 4).Value = t.Fecha.ToString("dd/MM/yyyy");
+                    worksheet.Cell(i + 2, 5).Value = t.Hora.ToString(@"hh\:mm");
+                    worksheet.Cell(i + 2, 6).Value = t.Duracion;
+                    worksheet.Cell(i + 2, 7).Value = t.FechaFin.ToString("dd/MM/yyyy HH:mm");
+                    worksheet.Cell(i + 2, 8).Value = t.Estado;
+                    worksheet.Cell(i + 2, 9).Value = t.Precio;
+                    worksheet.Cell(i + 2, 10).Value = t.ITBIS;
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    stream.Position = 0;
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Tours.xlsx");
+                }
+            }
+        }
+
+
 
         public ActionResult Index()
         {
@@ -67,53 +119,52 @@ namespace AgenciaDeToursRD.Controllers
             }
 
 
-
-            [HttpGet]
-            public ActionResult Create()
-            {
-                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre");
-                ViewBag.DestinoID = new SelectList(new List<SelectListItem>());
-                return View();
-            }
-
+        [HttpGet]
+        public ActionResult Create()
+        {
+            ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre");
+            ViewBag.NombreDestino = "";
+            ViewBag.DuracionDestino = "";
+            ViewBag.ITBIS = "";
+            ViewBag.FechaFin = "";
+            ViewBag.Estado = "";
+            return View();
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(Tour tour)
         {
-            try
+            if (tour.DestinoID <= 0)
             {
-       
-                if (tour.DestinoID <= 0)
-                {
-                    ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
-                }
-
-                if (_context.Tours.Any(t => t.Nombre == tour.Nombre))
-                {
-                    ModelState.AddModelError("Nombre", "Ya existe un tour con ese nombre.");
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                    ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
-                    return View(tour);
-                }
-
-                _context.Tours.Add(tour);
-                _context.SaveChanges();
-                return RedirectToAction("Index");
+                ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
             }
-            catch (Exception ex)
+
+            if (_context.Tours.Any(t => t.Nombre == tour.Nombre))
             {
-                ModelState.AddModelError(string.Empty, $"Error al crear: {ex.Message}");
-                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
+                ModelState.AddModelError("Nombre", "Ya existe un tour con ese nombre.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var destino = _context.Destinos
+                    .Include(d => d.Pais)
+                    .FirstOrDefault(d => d.ID == tour.DestinoID);
+
+                ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
+                ViewBag.NombreDestino = destino?.Nombre ?? "";
+                ViewBag.DuracionDestino = destino?.DuracionTexto ?? "";
+                ViewBag.ITBIS = tour.ITBIS.ToString("0.00");
+                ViewBag.FechaFin = tour.FechaFin.ToString("dd/MM/yyyy HH:mm");
+                ViewBag.Estado = tour.Estado;
+
                 return View(tour);
             }
-        }
 
+            _context.Tours.Add(tour);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
 
 
 
@@ -128,43 +179,35 @@ namespace AgenciaDeToursRD.Controllers
             if (tour == null)
                 return NotFound();
 
-            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", tour.Destino.PaisId); 
+            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", tour.Destino?.PaisId);
             ViewBag.NombreDestino = tour.Destino?.Nombre ?? "";
             ViewBag.DuracionDestino = tour.Destino?.DuracionTexto ?? "";
             ViewBag.ITBIS = tour.ITBIS.ToString("0.00");
-            ViewBag.FechaFin = tour.FechaFin.ToString("yyyy-MM-dd");
+            ViewBag.FechaFin = tour.FechaFin.ToString("dd/MM/yyyy HH:mm");
             ViewBag.Estado = tour.Estado;
 
             return View(tour);
         }
 
-
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, Tour tour)
+        public IActionResult Edit(int id, Tour tour)
         {
             if (id != tour.ID)
             {
-                ModelState.AddModelError("", "ID del tour no coincide.");
+                ViewBag.Error = "ID del tour no coincide.";
+                return View(tour);
             }
 
-          
             if (_context.Tours.Any(t => t.Nombre == tour.Nombre && t.ID != tour.ID))
             {
-                ModelState.AddModelError("Nombre", "Ya existe otro tour con ese nombre.");
+                ViewBag.Error = "Ya existe otro tour con ese nombre.";
+                return View(tour);
             }
 
             if (tour.DestinoID <= 0)
             {
-                ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
+                ViewBag.Error = "Debes seleccionar un destino.";
                 return View(tour);
             }
 
@@ -176,12 +219,41 @@ namespace AgenciaDeToursRD.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Error al guardar cambios: {ex.Message}");
-                ViewBag.PaisID = new SelectList(_context.Paises, "ID", "Nombre", tour.PaisID);
-                ViewBag.DestinoID = new SelectList(_context.Destinos.Where(d => d.PaisId == tour.PaisID), "ID", "Nombre", tour.DestinoID);
+                ViewBag.Error = $"Error al guardar cambios: {ex.Message}";
                 return View(tour);
             }
         }
+
+
+        private ActionResult ReenviarVista(Tour tour)
+        {
+         
+            var destino = _context.Destinos
+                .Include(d => d.Pais)
+                .FirstOrDefault(d => d.ID == tour.DestinoID);
+
+            // Cargar lista de países
+            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", destino?.PaisId ?? tour.PaisID);
+
+            // Mostrar nombre y duración del destino
+            ViewBag.NombreDestino = destino?.Nombre ?? "";
+            ViewBag.DuracionDestino = destino?.DuracionTexto ?? "";
+
+            // Calcular ITBIS para mostrar
+            ViewBag.ITBIS = (tour.Precio * 0.18m).ToString("0.00");
+
+            // Calcular FechaFin y Estado para mostrar
+            DateTime fechaHoraInicio = tour.Fecha.Date + tour.Hora;
+            TimeSpan duracion = Tour.ParseDuracion(destino?.DuracionTexto ?? "");
+            DateTime fechaFin = fechaHoraInicio.Add(duracion);
+
+            ViewBag.FechaFin = fechaFin.ToString("dd/MM/yyyy HH:mm");
+            ViewBag.Estado = fechaFin > DateTime.Now ? "Vigente" : "Vencido";
+
+            return View("Edit", tour);
+        }
+
+
 
 
         [HttpGet]
@@ -229,18 +301,6 @@ namespace AgenciaDeToursRD.Controllers
 
 
 
-        public JsonResult DestinosPorPais(int id)
-        {
-            var destinos = _context.Destinos
-                .Where(d => d.PaisId == id)
-                .Select(d => new SelectListItem
-                {
-                    Value = d.ID.ToString(),
-                    Text = d.Nombre
-                }).ToList();
-
-            return Json(destinos);
-        }
 
         public JsonResult ObtenerDestino(int? id)
         {

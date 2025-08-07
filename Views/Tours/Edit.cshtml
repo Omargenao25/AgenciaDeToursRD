@@ -6,7 +6,12 @@
 
 <h2 class="mb-4">Editar tour</h2>
 
-@using (Html.BeginForm("Edit", "Tours", FormMethod.Post, new { id = Model.ID }))
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+@using (Html.BeginForm("Edit", "Tours", FormMethod.Post))
 {
     @Html.AntiForgeryToken()
 
@@ -14,61 +19,49 @@
         @Html.HiddenFor(model => model.ID)
 
         <div class="form-group">
-            <label asp-for="Nombre" class="control-label"></label>
-            <input asp-for="Nombre" class="form-control" />
-            <span asp-validation-for="Nombre" class="text-danger"></span>
+            @Html.LabelFor(model => model.Nombre)
+            @Html.TextBoxFor(model => model.Nombre, new { @class = "form-control" })
         </div>
-
 
         <div class="mb-3">
             @Html.LabelFor(model => model.PaisID)
             @Html.DropDownListFor(model => model.PaisID, ViewBag.Paises as SelectList, "-- Selecciona un país --", new { @class = "form-control", @id = "PaisID" })
-            @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
             @Html.Label("Destino")
-            <input type="text" id="DestinoNombre" class="form-control" value="@ViewBag.NombreDestino" readonly />
+            <input type="text" id="DestinoNombre" class="form-control" value="@ViewBag.NombreDestino" readonly data-duracion="@ViewBag.DuracionDestino" />
             @Html.HiddenFor(model => model.DestinoID, new { id = "DestinoID" })
-            <span class="text-danger">
-                @Html.ValidationMessageFor(model => model.DestinoID)
-            </span>
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.Fecha)
             @Html.TextBoxFor(model => model.Fecha, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control", @id = "Fecha" })
-            @Html.ValidationMessageFor(model => model.Fecha, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.Hora)
             @Html.TextBoxFor(model => model.Hora, "{0:hh\\:mm}", new { @type = "time", @class = "form-control", @id = "Hora" })
-            @Html.ValidationMessageFor(model => model.Hora, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
-            @Html.LabelFor(model => model.FechaFin)
-            @Html.TextBoxFor(model => model.FechaFin, "{0:dd/MM/yyyy HH:mm}", new { @class = "form-control", @readonly = "readonly", @id = "FechaFin" })
-            @Html.ValidationMessageFor(model => model.FechaFin, "", new { @class = "text-danger" })
+            @Html.Label("Fecha Fin")
+            <input type="text" id="FechaFinTexto" name="FechaFin" class="form-control" value="@ViewBag.FechaFin" readonly />
         </div>
 
         <div class="mb-3">
-            @Html.LabelFor(model => model.Estado)
-            @Html.TextBoxFor(model => model.Estado, new { @class = "form-control", @readonly = "readonly", @id = "Estado" })
-            @Html.ValidationMessageFor(model => model.Estado, "", new { @class = "text-danger" })
+            @Html.Label("Estado")
+            <input type="text" id="EstadoTexto" name="Estado" class="form-control" value="@ViewBag.Estado" readonly />
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.Precio)
             @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01", type = "number", @id = "Precio" })
-            @Html.ValidationMessageFor(model => model.Precio, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
-            @Html.LabelFor(model => model.ITBIS)
-            @Html.TextBoxFor(model => model.ITBIS, new { @class = "form-control", @readonly = "readonly", @id = "ITBIS" })
-            @Html.ValidationMessageFor(model => model.ITBIS, "", new { @class = "text-danger" })
+            @Html.Label("ITBIS")
+            <input type="text" id="ITBISTexto" name="ITBIS" class="form-control" value="@ViewBag.ITBIS" readonly />
         </div>
 
         <button type="submit" class="btn btn-success">Actualizar</button>
@@ -85,12 +78,7 @@
                 const paisId = $(this).val();
 
                 if (!paisId) {
-                    $('#DestinoNombre').val('');
-                    $('#DestinoID').val('');
-                    $('#FechaFin').val('');
-                    $('#Estado').val('');
-                    $('#Precio').val('');
-                    $('#ITBIS').val('');
+                    $('#DestinoNombre, #DestinoID, #FechaFinTexto, #EstadoTexto, #Precio, #ITBISTexto').val('');
                     return;
                 }
 
@@ -102,65 +90,58 @@
                     data: { id: paisId },
                     success: function (response) {
                         if (!response || !response.success) {
-                            $('#DestinoNombre').val('');
-                            $('#DestinoID').val('');
-                            $('#FechaFin').val('');
-                            $('#Estado').val('');
-                            $('#Precio').val('');
-                            $('#ITBIS').val('');
+                            $('#DestinoNombre, #DestinoID, #FechaFinTexto, #EstadoTexto, #Precio, #ITBISTexto').val('');
                             return;
                         }
 
                         $('#DestinoNombre').val(response.nombre);
                         $('#DestinoID').val(response.idDestino);
-                        $('#DestinoNombre').data('duracion', response.duracion);
+                        $('#DestinoNombre').attr('data-duracion', response.duracion);
                         $('#Precio').val(response.precio.toFixed(2)).trigger('input');
 
-                        actualizarFechaFinYEstado();
+                        actualizarVista();
                     }
                 });
             });
 
-            $('#Fecha, #Hora').change(function () {
-                actualizarFechaFinYEstado();
-            });
-
+            $('#Fecha, #Hora').change(actualizarVista);
             $('#Precio').on('input', function () {
                 const precio = parseFloat($(this).val());
                 const itbis = isNaN(precio) ? 0 : (precio * 0.18).toFixed(2);
-                $('#ITBIS').val(itbis);
+                $('#ITBISTexto').val(itbis);
             });
 
             $('#Precio').trigger('input');
-            actualizarFechaFinYEstado();
+            actualizarVista();
 
-            function actualizarFechaFinYEstado() {
-                var duracion = $('#DestinoNombre').data('duracion') || '@ViewBag.DuracionDestino';
-                var fecha = $('#Fecha').val();
-                var hora = $('#Hora').val();
+            function actualizarVista() {
+                const duracion = $('#DestinoNombre').attr('data-duracion');
+                const fecha = $('#Fecha').val();
+                const hora = $('#Hora').val();
 
                 if (!duracion || !fecha || !hora) {
-                    $('#FechaFin').val('');
-                    $('#Estado').val('');
+                    $('#FechaFinTexto, #EstadoTexto').val('');
                     return;
                 }
 
-                var dias = 0;
-                var match = duracion.match(/(\d+)\s*d[ií]as?/i);
-                if (match) dias = parseInt(match[1]);
+                const match = duracion.match(/(\d+)\s*d[ií]as?/i);
+                const dias = match ? parseInt(match[1]) : 0;
 
-                var fechaHoraInicio = new Date(fecha + 'T' + hora);
+                const fechaHoraInicio = new Date(fecha + 'T' + hora);
                 fechaHoraInicio.setDate(fechaHoraInicio.getDate() + dias);
 
-                var opciones = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-                var fechaFinStr = fechaHoraInicio.toLocaleString('es-ES', opciones);
+                const fechaFinStr = fechaHoraInicio.toLocaleString('es-ES', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
 
-                $('#FechaFin').val(fechaFinStr);
+                $('#FechaFinTexto').val(fechaFinStr);
 
-                var ahora = new Date();
-                $('#Estado').val(fechaHoraInicio > ahora ? 'Vigente' : 'Vencido');
+                const ahora = new Date();
+                const estado = fechaHoraInicio > ahora ? 'Vigente' : 'Vencido';
+
+                $('#EstadoTexto').val(estado);
             }
         });
     </script>
 }
- 

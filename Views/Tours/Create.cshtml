@@ -26,7 +26,7 @@
 
         <div class="mb-3">
             @Html.Label("Destino")
-            <input type="text" id="DestinoNombre" class="form-control" readonly />
+            <input type="text" id="DestinoNombre" class="form-control" readonly value="@ViewBag.NombreDestino" data-duracion="@ViewBag.DuracionDestino" />
             @Html.HiddenFor(model => model.DestinoID, new { id = "DestinoID" })
             <span class="text-danger">
                 @Html.ValidationMessageFor(model => model.DestinoID)
@@ -47,13 +47,13 @@
 
         <div class="mb-3">
             @Html.LabelFor(model => model.FechaFin)
-            @Html.TextBoxFor(model => model.FechaFin, "{0:dd/MM/yyyy HH:mm}", new { @class = "form-control", @readonly = "readonly", @id = "FechaFin" })
+            @Html.TextBoxFor(model => model.FechaFin, new { @class = "form-control", @readonly = "readonly", @id = "FechaFin", @value = ViewBag.FechaFin })
             @Html.ValidationMessageFor(model => model.FechaFin, "", new { @class = "text-danger" })
         </div>
 
         <div class="mb-3">
             @Html.LabelFor(model => model.Estado)
-            @Html.TextBoxFor(model => model.Estado, new { @class = "form-control", @readonly = "readonly", @id = "Estado" })
+            @Html.TextBoxFor(model => model.Estado, new { @class = "form-control", @readonly = "readonly", @id = "Estado", @value = ViewBag.Estado })
             @Html.ValidationMessageFor(model => model.Estado, "", new { @class = "text-danger" })
         </div>
 
@@ -65,7 +65,7 @@
 
         <div class="mb-3">
             @Html.LabelFor(model => model.ITBIS)
-            @Html.TextBoxFor(model => model.ITBIS, new { @class = "form-control", @readonly = "readonly", @id = "ITBIS" })
+            @Html.TextBoxFor(model => model.ITBIS, new { @class = "form-control", @readonly = "readonly", @id = "ITBIS", @value = ViewBag.ITBIS })
             @Html.ValidationMessageFor(model => model.ITBIS, "", new { @class = "text-danger" })
         </div>
 
@@ -78,7 +78,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-
         $(document).ready(function () {
             $('#PaisID').change(function () {
                 var paisId = $(this).val();
@@ -118,7 +117,6 @@
                 actualizarFechaFinYEstado();
             });
 
-
             function actualizarFechaFinYEstado() {
                 var duracion = $('#DestinoNombre').data('duracion');
                 var fecha = $('#Fecha').val();
@@ -130,15 +128,12 @@
                     return;
                 }
 
-
                 var dias = 0;
                 var match = duracion.match(/(\d+)\s*d[ií]as?/i);
                 if (match) dias = parseInt(match[1]);
 
                 var fechaHoraInicio = new Date(fecha + 'T' + hora);
-
                 fechaHoraInicio.setDate(fechaHoraInicio.getDate() + dias);
-
 
                 var opciones = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
                 var fechaFinStr = fechaHoraInicio.toLocaleString('es-ES', opciones);
@@ -148,10 +143,7 @@
                 var ahora = new Date();
                 $('#Estado').val(fechaHoraInicio > ahora ? 'Vigente' : 'Vencido');
             }
-        });
 
-
-        $(function () {
             $('#Precio').on('input', function () {
                 const precio = parseFloat($(this).val());
                 const itbis = isNaN(precio) ? 0 : (precio * 0.18).toFixed(2);

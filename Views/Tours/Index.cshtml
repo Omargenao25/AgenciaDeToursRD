@@ -12,7 +12,13 @@
     <div class="alert alert-info">@ViewBag.InfoMessage</div>
 }
 
-<div class="d-flex justify-content-end mb-3">
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a href="@Url.Action("ExportToursToCsv", "Tours")" class="btn btn-primary">
+            📄 Exportar a CSV
+        </a>
+    </div>
+
     @Html.ActionLink("✚ Agregar nuevo tour", "Create", "Tours", null, new { @class = "btn btn-success" })
 </div>
 
@@ -59,8 +65,6 @@ else
                     </tr>
                 }
             </tbody>
-
-          
         </table>
     </div>
 }
