@@ -130,22 +130,23 @@ namespace AgenciaDeToursRD.Controllers
             ViewBag.Estado = "";
             return View();
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(Tour tour)
         {
+            var errores = new List<string>();
+
             if (tour.DestinoID <= 0)
             {
-                ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
+                errores.Add("Debes seleccionar un destino.");
             }
 
             if (_context.Tours.Any(t => t.Nombre == tour.Nombre))
             {
-                ModelState.AddModelError("Nombre", "Ya existe un tour con ese nombre.");
+                errores.Add("Ya existe un tour con ese nombre.");
             }
 
-            if (!ModelState.IsValid)
+            if (errores.Any())
             {
                 var destino = _context.Destinos
                     .Include(d => d.Pais)
@@ -157,6 +158,7 @@ namespace AgenciaDeToursRD.Controllers
                 ViewBag.ITBIS = tour.ITBIS.ToString("0.00");
                 ViewBag.FechaFin = tour.FechaFin.ToString("dd/MM/yyyy HH:mm");
                 ViewBag.Estado = tour.Estado;
+                ViewBag.Errores = errores;
 
                 return View(tour);
             }
@@ -165,6 +167,7 @@ namespace AgenciaDeToursRD.Controllers
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
+
 
 
 
@@ -232,17 +235,17 @@ namespace AgenciaDeToursRD.Controllers
                 .Include(d => d.Pais)
                 .FirstOrDefault(d => d.ID == tour.DestinoID);
 
-            // Cargar lista de países
+            
             ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", destino?.PaisId ?? tour.PaisID);
 
-            // Mostrar nombre y duración del destino
+         
             ViewBag.NombreDestino = destino?.Nombre ?? "";
             ViewBag.DuracionDestino = destino?.DuracionTexto ?? "";
 
-            // Calcular ITBIS para mostrar
+        
             ViewBag.ITBIS = (tour.Precio * 0.18m).ToString("0.00");
 
-            // Calcular FechaFin y Estado para mostrar
+        
             DateTime fechaHoraInicio = tour.Fecha.Date + tour.Hora;
             TimeSpan duracion = Tour.ParseDuracion(destino?.DuracionTexto ?? "");
             DateTime fechaFin = fechaHoraInicio.Add(duracion);
