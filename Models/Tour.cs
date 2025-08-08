@@ -42,7 +42,9 @@ namespace AgenciaDeToursRD.Models
         [MaxLength(20)]
         public string Estado { get; set; } 
 
+     
         public string Duracion => Destino?.DuracionTexto ?? "";
+
 
 
         public static TimeSpan ParseDuracion(string texto)

@@ -12,6 +12,7 @@ namespace AgenciaDeToursRD.Models
 
         public string? Bandera { get; set; }
 
+
         public virtual ICollection<Destino>? Destinos { get; set; }
     }
 }

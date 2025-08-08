@@ -48,6 +48,11 @@ namespace AgenciaDeToursRD.Data
                       .IsRequired()
                       .HasMaxLength(50);
 
+                entity.Property(d => d.ImagenUrl)
+                      .HasMaxLength(255)
+                      .IsUnicode(false);
+
+
                 entity.HasOne(d => d.Pais)
                       .WithMany(p => p.Destinos)
                       .HasForeignKey(d => d.PaisId)

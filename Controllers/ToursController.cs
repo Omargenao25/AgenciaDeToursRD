@@ -30,7 +30,7 @@ namespace AgenciaDeToursRD.Controllers
             {
                 var worksheet = workbook.Worksheets.Add("Tours");
 
-                // Encabezados
+           
                 worksheet.Cell(1, 1).Value = "Nombre";
                 worksheet.Cell(1, 2).Value = "País";
                 worksheet.Cell(1, 3).Value = "Destino";
@@ -42,7 +42,7 @@ namespace AgenciaDeToursRD.Controllers
                 worksheet.Cell(1, 9).Value = "Precio";
                 worksheet.Cell(1, 10).Value = "ITBIS";
 
-                // Datos
+                
                 for (int i = 0; i < tours.Count; i++)
                 {
                     var t = tours[i];
@@ -71,7 +71,6 @@ namespace AgenciaDeToursRD.Controllers
 
         public ActionResult Index()
         {
-
             try
             {
                 var tours = _context.Tours
@@ -84,8 +83,6 @@ namespace AgenciaDeToursRD.Controllers
                     ViewBag.InfoMessage = "No hay tours registrados en el sistema.";
                 }
 
-
-
                 return View(tours);
             }
             catch (Exception ex)
@@ -94,6 +91,7 @@ namespace AgenciaDeToursRD.Controllers
                 return View(new List<Tour>());
             }
         }
+
 
 
         public ActionResult Details(int? id)
@@ -129,7 +127,9 @@ namespace AgenciaDeToursRD.Controllers
             ViewBag.FechaFin = "";
             ViewBag.Estado = "";
             return View();
+
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(Tour tour)
@@ -182,7 +182,7 @@ namespace AgenciaDeToursRD.Controllers
             if (tour == null)
                 return NotFound();
 
-            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", tour.Destino?.PaisId);
+            ViewBag.NombrePais = tour.Destino?.Pais?.Nombre;
             ViewBag.NombreDestino = tour.Destino?.Nombre ?? "";
             ViewBag.DuracionDestino = tour.Destino?.DuracionTexto ?? "";
             ViewBag.ITBIS = tour.ITBIS.ToString("0.00");
@@ -225,35 +225,6 @@ namespace AgenciaDeToursRD.Controllers
                 ViewBag.Error = $"Error al guardar cambios: {ex.Message}";
                 return View(tour);
             }
-        }
-
-
-        private ActionResult ReenviarVista(Tour tour)
-        {
-         
-            var destino = _context.Destinos
-                .Include(d => d.Pais)
-                .FirstOrDefault(d => d.ID == tour.DestinoID);
-
-            
-            ViewBag.Paises = new SelectList(_context.Paises, "ID", "Nombre", destino?.PaisId ?? tour.PaisID);
-
-         
-            ViewBag.NombreDestino = destino?.Nombre ?? "";
-            ViewBag.DuracionDestino = destino?.DuracionTexto ?? "";
-
-        
-            ViewBag.ITBIS = (tour.Precio * 0.18m).ToString("0.00");
-
-        
-            DateTime fechaHoraInicio = tour.Fecha.Date + tour.Hora;
-            TimeSpan duracion = Tour.ParseDuracion(destino?.DuracionTexto ?? "");
-            DateTime fechaFin = fechaHoraInicio.Add(duracion);
-
-            ViewBag.FechaFin = fechaFin.ToString("dd/MM/yyyy HH:mm");
-            ViewBag.Estado = fechaFin > DateTime.Now ? "Vigente" : "Vencido";
-
-            return View("Edit", tour);
         }
 
 

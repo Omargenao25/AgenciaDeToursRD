@@ -6,11 +6,15 @@
 <tr>
     <td>
         <input type="hidden" name="Destinos[@i].ID" value="@Model.ID" />
+        <input type="hidden" name="Destinos[@i].PaisId" value="@Model.PaisId" />
         <input type="text"
                name="Destinos[@i].Nombre"
                value="@Model.Nombre"
                class="form-control"
                placeholder="Nombre del destino" />
+        <span class="text-danger field-validation-valid small"
+              data-valmsg-for="Destinos[@i].Nombre"
+              data-valmsg-replace="true"></span>
     </td>
     <td>
         <input type="text"
@@ -18,6 +22,30 @@
                value="@Model.DuracionTexto"
                class="form-control"
                placeholder="Duración (ej: 3 días)" />
+        <span class="text-danger field-validation-valid small"
+              data-valmsg-for="Destinos[@i].DuracionTexto"
+              data-valmsg-replace="true"></span>
+    </td>
+    <td>
+        @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+        {
+            <div class="mb-2">
+                <strong>Imagen actual:</strong><br />
+                <img src="@Model.ImagenUrl"
+                     alt="Imagen del destino"
+                     class="img-thumbnail"
+                     style="max-height: 120px;" />
+            </div>
+        }
+
+        <label class="form-label fw-bold small">@(string.IsNullOrEmpty(Model.ImagenUrl) ? "Cargar imagen" : "Reemplazar imagen")</label>
+        <input type="file"
+               name="Destinos[@i].DestinoFile"
+               class="form-control"
+               accept=".jpg,.jpeg,.png" />
+        <span class="text-danger field-validation-valid small"
+              data-valmsg-for="Destinos[@i].DestinoFile"
+              data-valmsg-replace="true"></span>
     </td>
     <td class="text-center">
         @if (Model.Tours != null && Model.Tours.Any())

@@ -19,6 +19,13 @@ namespace AgenciaDeToursRD.Models
 
         public string? DuracionTexto { get; set; }
 
+        public string? ImagenUrl { get; set; }
+
+        [NotMapped]
+        public IFormFile? DestinoFile { get; set; }
+
+
+
         public ICollection<Tour> Tours { get; set; } = new List<Tour>();
     }
 }

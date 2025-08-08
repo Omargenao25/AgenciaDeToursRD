@@ -7,13 +7,12 @@
 
 <h2 class="mb-4">🎒 Detalles del Tour</h2>
 
-
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
-<div class="card">
+<div class="card shadow-sm">
     <div class="card-body">
         <dl class="row">
             <dt class="col-sm-3">Nombre:</dt>
@@ -31,6 +30,18 @@
             <dt class="col-sm-3">Precio:</dt>
             <dd class="col-sm-9">@String.Format("${0:N2}", Model.Precio)</dd>
         </dl>
+
+        <hr />
+
+
+        @if (!string.IsNullOrEmpty(Model.Destino.ImagenUrl))
+        {
+            <div class="mb-4">
+                <h5>📍 Imagen del destino</h5>
+                <img src="@Url.Content(Model.Destino.ImagenUrl)" alt="Imagen del destino" class="img-thumbnail shadow" style="max-width: 400px;" />
+            </div>
+        }
+
         <a href="@Url.Action("Edit", new { id = Model.ID })" class="btn btn-warning">Editar</a>
         <a href="@Url.Action("Index")" class="btn btn-secondary">Volver a la lista</a>
     </div>

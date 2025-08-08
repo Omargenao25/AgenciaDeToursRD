@@ -17,26 +17,13 @@
         </div>
 
         <div class="card-body">
-
-            @* Mostrar errores de ModelState *@
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <div class="alert alert-danger d-flex align-items-start">
-                    <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
-                    <ul class="mb-0">
-                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                        {
-                            <li>@error.ErrorMessage</li>
-                        }
-                    </ul>
-                </div>
-            }
-
             <form asp-action="Edit" enctype="multipart/form-data" class="needs-validation" novalidate>
                 <input type="hidden" asp-for="ID" />
 
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
                 <div class="mb-3">
-                    <label asp-for="Nombre" class="form-label fw-bold">Nombre</label>
+                    <label asp-for="Nombre" class="form-label fw-bold"></label>
                     <input asp-for="Nombre" class="form-control" />
                     <span asp-validation-for="Nombre" class="text-danger small"></span>
                 </div>
@@ -51,11 +38,12 @@
                             <img src="@Model.Bandera" alt="Bandera actual" style="max-height: 100px;" class="img-thumbnail mt-2" />
                         </div>
                     }
+                    <span asp-validation-for="Bandera" class="text-danger small"></span>
                 </div>
 
                 <hr />
                 <h5 class="text-secondary mb-3">
-                    <i class="bi bi-geo-alt-fill me-2"></i>Destinos (opcional)
+                    <i class="bi bi-geo-alt-fill me-2"></i>Destinos
                 </h5>
 
                 <div class="table-responsive mb-3">
@@ -64,6 +52,7 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Duración</th>
+                                <th>Imagen</th>
                                 <th style="width: 50px;"></th>
                             </tr>
                         </thead>
@@ -107,43 +96,23 @@
     <script>
         let destinoIndex = @Model.Destinos?.Count() ?? 0;
 
-        function reindexDestinos() {
-            const rows = document.querySelectorAll("#destinosBody tr");
-            rows.forEach((row, index) => {
-                const inputNombre = row.querySelector('input[name$=".Nombre"]');
-                if (inputNombre) inputNombre.name = `Destinos[${index}].Nombre`;
-
-                const inputDuracion = row.querySelector('input[name$=".DuracionTexto"]');
-                if (inputDuracion) inputDuracion.name = `Destinos[${index}].DuracionTexto`;
-
-                const inputID = row.querySelector('input[name$=".ID"]');
-                if (inputID) inputID.name = `Destinos[${index}].ID`;
-
-                const inputPais = row.querySelector('input[name$=".PaisId"]');
-                if (inputPais) inputPais.name = `Destinos[${index}].PaisId`;
-            });
-
-            destinoIndex = rows.length;
-        }
-
-        function removeDestino(button) {
-            button.closest("tr").remove();
-            reindexDestinos();
-        }
-
         function addDestino() {
-            const index = destinoIndex;
             const paisId = @Model.ID;
-
-            const row = `
+            const template = `
                         <tr>
                             <td>
-                                <input type="hidden" name="Destinos[${index}].ID" value="0" />
-                                <input type="hidden" name="Destinos[${index}].PaisId" value="${paisId}" />
-                                <input name="Destinos[${index}].Nombre" class="form-control" />
+                                <input type="hidden" name="Destinos[${destinoIndex}].ID" value="0" />
+                                <input type="hidden" name="Destinos[${destinoIndex}].PaisId" value="${paisId}" />
+                                <input name="Destinos[${destinoIndex}].Nombre" class="form-control" />
+                                <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].Nombre" data-valmsg-replace="true"></span>
                             </td>
                             <td>
-                                <input name="Destinos[${index}].DuracionTexto" class="form-control" />
+                                <input name="Destinos[${destinoIndex}].DuracionTexto" class="form-control" />
+                                <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].DuracionTexto" data-valmsg-replace="true"></span>
+                            </td>
+                            <td>
+                                <input type="file" name="Destinos[${destinoIndex}].DestinoFile" class="form-control" accept=".jpg,.jpeg,.png" />
+                                <span class="text-danger field-validation-valid small" data-valmsg-for="Destinos[${destinoIndex}].DestinoFile" data-valmsg-replace="true"></span>
                             </td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDestino(this)">
@@ -152,8 +121,12 @@
                             </td>
                         </tr>
                     `;
-            document.getElementById("destinosBody").insertAdjacentHTML("beforeend", row);
+            document.getElementById("destinosBody").insertAdjacentHTML("beforeend", template);
             destinoIndex++;
+        }
+
+        function removeDestino(button) {
+            button.closest("tr").remove();
         }
     </script>
 }
