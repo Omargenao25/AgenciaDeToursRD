@@ -32,6 +32,13 @@
             {
                 <div class="col">
                     <div class="card shadow-sm h-100">
+                        @if (!string.IsNullOrEmpty(destino.ImagenUrl))
+                        {
+                            <img src="@destino.ImagenUrl" alt="Imagen de @destino.Nombre"
+                                 class="card-img-top img-fluid"
+                                 style="object-fit: cover; max-height: 200px;" />
+                        }
+
                         <div class="card-body">
                             <h5 class="card-title text-secondary">@destino.Nombre</h5>
 

@@ -134,19 +134,17 @@ namespace AgenciaDeToursRD.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(Tour tour)
         {
-            var errores = new List<string>();
-
             if (tour.DestinoID <= 0)
             {
-                errores.Add("Debes seleccionar un destino.");
+                ModelState.AddModelError("DestinoID", "Debes seleccionar un destino.");
             }
 
             if (_context.Tours.Any(t => t.Nombre == tour.Nombre))
             {
-                errores.Add("Ya existe un tour con ese nombre.");
+                ModelState.AddModelError("Nombre", "Ya existe un tour con ese nombre.");
             }
 
-            if (errores.Any())
+            if (!ModelState.IsValid)
             {
                 var destino = _context.Destinos
                     .Include(d => d.Pais)
@@ -158,7 +156,6 @@ namespace AgenciaDeToursRD.Controllers
                 ViewBag.ITBIS = tour.ITBIS.ToString("0.00");
                 ViewBag.FechaFin = tour.FechaFin.ToString("dd/MM/yyyy HH:mm");
                 ViewBag.Estado = tour.Estado;
-                ViewBag.Errores = errores;
 
                 return View(tour);
             }

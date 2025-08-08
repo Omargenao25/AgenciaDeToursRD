@@ -203,7 +203,6 @@ namespace AgenciaDeToursRD.Controllers
             return View(pais);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Pais pais, IFormFile? BanderaFile)
@@ -317,6 +316,14 @@ namespace AgenciaDeToursRD.Controllers
 
                 foreach (var destino in destinosAEliminar)
                 {
+                    bool estaEnUso = await _context.Tours.AnyAsync(t => t.DestinoID == destino.ID);
+                    if (estaEnUso)
+                    {
+                        FusionarDatosPersistentes(pais, paisExistente);
+                        ModelState.AddModelError(string.Empty, $"El destino '{destino.Nombre}' no se puede eliminar porque está vinculado a uno o más tours.");
+                        return View(pais);
+                    }
+
                     _context.Destinos.Remove(destino);
                 }
 
@@ -348,6 +355,7 @@ namespace AgenciaDeToursRD.Controllers
                 return View(pais);
             }
         }
+
 
 
         private void FusionarDatosPersistentes(Pais paisFormulario, Pais paisExistente)
