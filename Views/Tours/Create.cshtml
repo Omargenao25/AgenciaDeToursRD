@@ -2,154 +2,141 @@
 
 @{
     ViewBag.Title = "Crear Tour";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2 class="mb-4">Crear nuevo tour</h2>
+<div class="container py-4">
+    <h2 class="text-primary mb-4">
+        <i class="bi bi-plus-circle me-2"></i>Crear nuevo tour
+    </h2>
 
-@using (Html.BeginForm("Create", "Tours", FormMethod.Post))
-{
-    @Html.AntiForgeryToken()
+    @using (Html.BeginForm("Create", "Tours", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
 
-    <div class="card shadow-sm p-4 bg-light">
+        <div class="card shadow-sm p-4 bg-light">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-     
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Nombre" class="form-label"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
 
-        <div class="form-group mb-3">
-            <label asp-for="Nombre" class="control-label"></label>
-            <input asp-for="Nombre" class="form-control" />
-            <span asp-validation-for="Nombre" class="text-danger"></span>
+                <div class="col-md-6">
+                    @Html.LabelFor(model => model.PaisID, htmlAttributes: new { @class = "form-label" })
+                    @Html.DropDownListFor(model => model.PaisID, ViewBag.Paises as SelectList, "-- Selecciona un país --", new { @class = "form-select", @id = "PaisID" })
+                    @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label for="DestinoNombre" class="form-label">Destino</label>
+                    <input type="text" id="DestinoNombre" class="form-control" readonly value="@ViewBag.NombreDestino" data-duracion="@ViewBag.DuracionDestino" />
+                    @Html.HiddenFor(model => model.DestinoID, new { id = "DestinoID" })
+                    <span asp-validation-for="DestinoID" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(model => model.Fecha, htmlAttributes: new { @class = "form-label" })
+                    @Html.TextBoxFor(model => model.Fecha, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control", @id = "Fecha" })
+                    @Html.ValidationMessageFor(model => model.Fecha, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(model => model.Hora, htmlAttributes: new { @class = "form-label" })
+                    @Html.TextBoxFor(model => model.Hora, "{0:hh\\:mm}", new { @type = "time", @class = "form-control", @id = "Hora" })
+                    @Html.ValidationMessageFor(model => model.Hora, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(model => model.FechaFin, htmlAttributes: new { @class = "form-label" })
+                    @Html.TextBoxFor(model => model.FechaFin, new { @class = "form-control", @readonly = "readonly", @id = "FechaFin", @value = ViewBag.FechaFin })
+                    @Html.ValidationMessageFor(model => model.FechaFin, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(model => model.Estado, htmlAttributes: new { @class = "form-label" })
+                    @Html.TextBoxFor(model => model.Estado, new { @class = "form-control", @readonly = "readonly", @id = "Estado", @value = ViewBag.Estado })
+                    @Html.ValidationMessageFor(model => model.Estado, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(model => model.Precio, htmlAttributes: new { @class = "form-label" })
+                    @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01", type = "number", @id = "Precio" })
+                    @Html.ValidationMessageFor(model => model.Precio, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(model => model.ITBIS, htmlAttributes: new { @class = "form-label" })
+                    @Html.TextBoxFor(model => model.ITBIS, new { @class = "form-control", @readonly = "readonly", @id = "ITBIS", @value = ViewBag.ITBIS })
+                    @Html.ValidationMessageFor(model => model.ITBIS, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-save me-1"></i>Guardar
+                </button>
+                @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary" })
+            </div>
         </div>
-
-        <div class="mb-3">
-            @Html.LabelFor(model => model.PaisID)
-            @Html.DropDownListFor(model => model.PaisID, ViewBag.Paises as SelectList, "-- Selecciona un país --", new { @class = "form-control", @id = "PaisID" })
-            @Html.ValidationMessageFor(model => model.PaisID, "", new { @class = "text-danger" })
-        </div>
-
-        <div class="mb-3">
-            @Html.Label("Destino")
-            <input type="text" id="DestinoNombre" class="form-control" readonly value="@ViewBag.NombreDestino" data-duracion="@ViewBag.DuracionDestino" />
-            @Html.HiddenFor(model => model.DestinoID, new { id = "DestinoID" })
-            <span asp-validation-for="DestinoID" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            @Html.LabelFor(model => model.Fecha)
-            @Html.TextBoxFor(model => model.Fecha, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control", @id = "Fecha" })
-            @Html.ValidationMessageFor(model => model.Fecha, "", new { @class = "text-danger" })
-        </div>
-
-        <div class="mb-3">
-            @Html.LabelFor(model => model.Hora)
-            @Html.TextBoxFor(model => model.Hora, "{0:hh\\:mm}", new { @type = "time", @class = "form-control", @id = "Hora" })
-            @Html.ValidationMessageFor(model => model.Hora, "", new { @class = "text-danger" })
-        </div>
-
-        <div class="mb-3">
-            @Html.LabelFor(model => model.FechaFin)
-            @Html.TextBoxFor(model => model.FechaFin, new { @class = "form-control", @readonly = "readonly", @id = "FechaFin", @value = ViewBag.FechaFin })
-            @Html.ValidationMessageFor(model => model.FechaFin, "", new { @class = "text-danger" })
-        </div>
-
-        <div class="mb-3">
-            @Html.LabelFor(model => model.Estado)
-            @Html.TextBoxFor(model => model.Estado, new { @class = "form-control", @readonly = "readonly", @id = "Estado", @value = ViewBag.Estado })
-            @Html.ValidationMessageFor(model => model.Estado, "", new { @class = "text-danger" })
-        </div>
-
-        <div class="mb-3">
-            @Html.LabelFor(model => model.Precio)
-            @Html.TextBoxFor(model => model.Precio, new { @class = "form-control", step = "0.01", type = "number", @id = "Precio" })
-            @Html.ValidationMessageFor(model => model.Precio, "", new { @class = "text-danger" })
-        </div>
-
-        <div class="mb-3">
-            @Html.LabelFor(model => model.ITBIS)
-            @Html.TextBoxFor(model => model.ITBIS, new { @class = "form-control", @readonly = "readonly", @id = "ITBIS", @value = ViewBag.ITBIS })
-            @Html.ValidationMessageFor(model => model.ITBIS, "", new { @class = "text-danger" })
-        </div>
-
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-secondary ms-2" })
-    </div>
-}
+    }
+</div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        $(document).ready(function () {
+        $(function () {
             $('#PaisID').change(function () {
-                var paisId = $(this).val();
+                const paisId = $(this).val();
+                if (!paisId) return limpiarCampos();
 
-                if (paisId) {
-                    $('#DestinoNombre').val('Cargando destino...');
+                $('#DestinoNombre').val('Cargando destino...');
 
-                    $.ajax({
-                        url: '@Url.Action("ObtenerDestino", "Tours")',
-                        type: 'GET',
-                        data: { id: paisId },
-                        success: function (response) {
-                            if (!response || !response.success) {
-                                $('#DestinoNombre').val('');
-                                $('#DestinoID').val('');
-                                $('#FechaFin').val('');
-                                $('#Estado').val('');
-                                return;
-                            }
+                $.get('@Url.Action("ObtenerDestino", "Tours")', { id: paisId }, function (response) {
+                    if (!response || !response.success) return limpiarCampos();
 
-                            $('#DestinoNombre').val(response.nombre);
-                            $('#DestinoID').val(response.idDestino);
-                            $('#DestinoNombre').data('duracion', response.duracion);
-
-                            actualizarFechaFinYEstado();
-                        }
-                    });
-                } else {
-                    $('#DestinoNombre').val('');
-                    $('#DestinoID').val('');
-                    $('#FechaFin').val('');
-                    $('#Estado').val('');
-                }
+                    $('#DestinoNombre').val(response.nombre);
+                    $('#DestinoID').val(response.idDestino);
+                    $('#DestinoNombre').data('duracion', response.duracion);
+                    actualizarFechaFinYEstado();
+                });
             });
 
-            $('#Fecha, #Hora').change(function () {
-                actualizarFechaFinYEstado();
-            });
-
-            function actualizarFechaFinYEstado() {
-                var duracion = $('#DestinoNombre').data('duracion');
-                var fecha = $('#Fecha').val();
-                var hora = $('#Hora').val();
-
-                if (!duracion || !fecha || !hora) {
-                    $('#FechaFin').val('');
-                    $('#Estado').val('');
-                    return;
-                }
-
-                var dias = 0;
-                var match = duracion.match(/(\d+)\s*d[ií]as?/i);
-                if (match) dias = parseInt(match[1]);
-
-                var fechaHoraInicio = new Date(fecha + 'T' + hora);
-                fechaHoraInicio.setDate(fechaHoraInicio.getDate() + dias);
-
-                var opciones = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-                var fechaFinStr = fechaHoraInicio.toLocaleString('es-ES', opciones);
-
-                $('#FechaFin').val(fechaFinStr);
-
-                var ahora = new Date();
-                $('#Estado').val(fechaHoraInicio > ahora ? 'Vigente' : 'Vencido');
-            }
+            $('#Fecha, #Hora').change(actualizarFechaFinYEstado);
 
             $('#Precio').on('input', function () {
                 const precio = parseFloat($(this).val());
                 const itbis = isNaN(precio) ? 0 : (precio * 0.18).toFixed(2);
                 $('#ITBIS').val(itbis);
             });
+
+            function actualizarFechaFinYEstado() {
+                const duracion = $('#DestinoNombre').data('duracion');
+                const fecha = $('#Fecha').val();
+                const hora = $('#Hora').val();
+
+                if (!duracion || !fecha || !hora) return limpiarCampos();
+
+                const dias = parseInt(duracion.match(/(\d+)\s*d[ií]as?/i)?.[1] || 0);
+                const inicio = new Date(`${fecha}T${hora}`);
+                inicio.setDate(inicio.getDate() + dias);
+
+                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                $('#FechaFin').val(inicio.toLocaleString('es-ES', opciones));
+
+                const ahora = new Date();
+                $('#Estado').val(inicio > ahora ? 'Vigente' : 'Vencido');
+            }
+
+            function limpiarCampos() {
+                $('#DestinoNombre').val('');
+                $('#DestinoID').val('');
+                $('#FechaFin').val('');
+                $('#Estado').val('');
+            }
         });
     </script>
 }

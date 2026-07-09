@@ -1,22 +1,89 @@
 ﻿@{
     ViewData["Title"] = "Inicio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container py-5 text-center">
-    <h1 class="display-4 mb-3">Bienvenido a AgenciaDeToursRD</h1>
-    <p class="lead mb-4">
-        Explora nuestros tours y descubre países increíbles con nosotros.
+<style>
+    .hero {
+        background: url('/images/tours-hero.jpg') center center / cover no-repeat;
+        color: white;
+        padding: 100px 20px;
+        position: relative;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-tour {
+        font-size: 1.2rem;
+        padding: 0.75rem 1.5rem;
+        min-width: 180px;
+    }
+
+    .section-intro {
+        padding: 60px 20px;
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="hero text-center">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1 class="display-3 fw-bold mb-3">Bienvenido a <span class="text-warning">AgenciaDeToursRD</span></h1>
+        <p class="lead mb-4">Tu aventura comienza aquí. Descubre destinos únicos, culturas vibrantes y experiencias inolvidables.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a asp-controller="Tours" asp-action="Index" class="btn btn-primary btn-lg btn-tour shadow-lg">
+                <i class="bi bi-airplane-engines me-2"></i> Ver Tours
+            </a>
+            <a asp-controller="Paises" asp-action="Index" class="btn btn-success btn-lg btn-tour shadow-lg">
+                <i class="bi bi-flag-fill me-2"></i> Ver Países
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="section-intro text-center">
+    <h2 class="fw-bold mb-3">¿Por qué elegirnos?</h2>
+    <p class="mb-4">
+        En <strong>AgenciaDeToursRD</strong> nos apasiona conectar personas con lugares extraordinarios. Ofrecemos tours cuidadosamente diseñados, atención personalizada y una experiencia que va más allá del viaje.
     </p>
-
-    <div class="d-flex justify-content-center gap-4 flex-wrap">
-        <a asp-controller="Tours" asp-action="Index" class="btn btn-primary btn-lg shadow-sm d-flex align-items-center">
-            <span>Ver Tours</span>
-            <i class="bi bi-airplane-engines ms-2"></i>
-        </a>
-
-        <a asp-controller="Paises" asp-action="Index" class="btn btn-success btn-lg shadow-sm d-flex align-items-center">
-            <span>Ver Países</span>
-            <i class="bi bi-flag-fill ms-2"></i>
-        </a>
+    <div class="row justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-globe-americas fs-1 text-primary mb-3"></i>
+                    <h5 class="card-title">Destinos Únicos</h5>
+                    <p class="card-text">Explora lugares que no encontrarás en los catálogos tradicionales. Vive la autenticidad.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-person-heart fs-1 text-success mb-3"></i>
+                    <h5 class="card-title">Atención Personalizada</h5>
+                    <p class="card-text">Cada viajero es único. Nos adaptamos a tus gustos, necesidades y sueños.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-star-fill fs-1 text-warning mb-3"></i>
+                    <h5 class="card-title">Experiencias Memorables</h5>
+                    <p class="card-text">No solo vendemos tours, creamos recuerdos que te acompañarán toda la vida.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

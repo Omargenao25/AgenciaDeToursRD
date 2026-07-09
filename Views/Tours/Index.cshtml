@@ -5,71 +5,86 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2 class="mb-4">🧭 Lista de Tours Disponibles</h2>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="bi bi-map-fill me-2"></i>Lista de Tours Disponibles
+        </h2>
 
-@if (ViewBag.InfoMessage != null)
-{
-    <div class="alert alert-info">@ViewBag.InfoMessage</div>
-}
-
-@if (ViewBag.ErrorMessage != null)
-{
-    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
-}
-
-<div class="d-flex justify-content-between mb-3">
-    <div>
-        <a href="@Url.Action("ExportToursToCsv", "Tours")" class="btn btn-primary">
-            📄 Exportar a CSV
-        </a>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("ExportToursToCsv", "Tours")" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-arrow-down me-1"></i> Exportar a CSV
+            </a>
+            @Html.ActionLink("Agregar nuevo tour", "Create", "Tours", null, new { @class = "btn btn-success" })
+        </div>
     </div>
 
-    @Html.ActionLink("✚ Agregar nuevo tour", "Create", "Tours", null, new { @class = "btn btn-success" })
-</div>
+    @if (ViewBag.InfoMessage != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @ViewBag.InfoMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info text-center" role="alert">
-        No hay tours registrados por el momento. ¡Agrega el primero! 🌎
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered table-striped align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Duración</th>
-                    <th>Precio</th>
-                    <th>ITBIS</th>
-                    <th>Fecha Fin</th>
-                    <th>Estado</th>
-                    <th class="text-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var tour in Model)
-                {
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning text-center" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>No hay tours registrados por el momento. ¡Agrega el primero!
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle shadow-sm">
+                <thead class="table-dark text-center">
                     <tr>
-                        <td>@tour.Nombre</td>
-                        <td>@tour.Fecha.ToString("dd/MM/yyyy")</td>
-                        <td>@tour.Hora</td>
-                        <td>@(tour.Duracion)</td> 
-                        <td>@tour.Precio.ToString("C")</td>
-                        <td>@tour.ITBIS.ToString("C")</td>
-                        <td>@tour.FechaFin.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@tour.Estado</td>
-                        <td class="text-center">
-                            @Html.ActionLink("Detalles", "Details", new { id = tour.ID }, new { @class = "btn btn-primary btn-sm me-1" })
-                            @Html.ActionLink("Editar", "Edit", new { id = tour.ID }, new { @class = "btn btn-warning btn-sm me-1" })
-                            @Html.ActionLink("Eliminar", "Delete", new { id = tour.ID }, new { @class = "btn btn-danger btn-sm" })
-                        </td>
+                        <th>Nombre</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Duración</th>
+                        <th>Precio</th>
+                        <th>ITBIS</th>
+                        <th>Fecha Fin</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+                </thead>
+                <tbody>
+                    @foreach (var tour in Model)
+                    {
+                        <tr>
+                            <td>@tour.Nombre</td>
+                            <td>@tour.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@tour.Hora</td>
+                            <td>@tour.Duracion</td>
+                            <td>@tour.Precio.ToString("C")</td>
+                            <td>@tour.ITBIS.ToString("C")</td>
+                            <td>@tour.FechaFin.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <span class="badge @(tour.Estado == "Vigente" ? "bg-success" : "bg-secondary")">
+                                    @tour.Estado
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    @Html.ActionLink("Detalles", "Details", new { id = tour.ID }, new { @class = "btn btn-sm btn-primary" })
+                                    @Html.ActionLink("Editar", "Edit", new { id = tour.ID }, new { @class = "btn btn-sm btn-warning" })
+                                    @Html.ActionLink("Eliminar", "Delete", new { id = tour.ID }, new { @class = "btn btn-sm btn-danger" })
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
